@@ -1,17 +1,16 @@
 { config, pkgs, ... }:
-
 {
   imports = [
     ./hardware-configuration.nix
+    ./nix.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "blockbuster"; # Define your hostname.
+  networking.hostName = "blockbuster";
 
   networking.networkmanager.enable = true;
-  networking.networkmanager.dhcp = "dhcpcd";
 
   time.timeZone = "America/New_York";
 
@@ -29,13 +28,14 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.papatux = {
     isNormalUser = true;
     description = "papatux";
     extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [];
+    openssh.authorizedKeys.keys = import ../../papatux-keys.nix;
   };
+
+  security.sudo.wheelNeedsPassword = false;
 
   nixpkgs.config.allowUnfree = true;
 
@@ -52,5 +52,4 @@
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "25.05"; # Did you read the comment?
-
 }

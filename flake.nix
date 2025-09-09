@@ -41,7 +41,7 @@
 
         echo "building $TARGET_HOST_NAME and deploying to $TARGET_HOST_ADDRESS"
 
-        NIX_SSHOPTS="-o ForwardAgent=yes" \
+        NIX_SSHOPTS="-o ForwardAgent=yes -J acidburn.vtluug.org" \
         ${pkgs.nixos-rebuild}/bin/nixos-rebuild switch \
           --fast --flake ".#$TARGET_HOST_NAME" \
           --use-remote-sudo \
