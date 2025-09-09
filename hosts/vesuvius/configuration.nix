@@ -3,12 +3,13 @@
   imports = [
     ./hardware-configuration.nix
     ./nix.nix
+    ./zfs.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "blockbuster";
+  networking.hostName = "vesuvius";
 
   networking.networkmanager.enable = true;
 

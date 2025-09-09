@@ -19,10 +19,10 @@
 
     flake = {
       nixosConfigurations = {
-        blockbuster = nixpkgs.lib.nixosSystem {
+        vesuvius = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            (import ./hosts/blockbuster/configuration.nix)
+            (import ./hosts/vesuvius/configuration.nix)
           ];
         };
       };
