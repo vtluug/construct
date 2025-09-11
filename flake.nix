@@ -3,13 +3,17 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+
     flake-parts.url = "github:hercules-ci/flake-parts";
+
+    agenix.url = "github:ryantm/agenix";
   };
 
   outputs = inputs @ {
     self,
     nixpkgs,
     flake-parts,
+    agenix,
   }:
   flake-parts.lib.mkFlake {inherit inputs;} {
     systems = [
@@ -23,6 +27,7 @@
           system = "x86_64-linux";
           modules = [
             (import ./hosts/vesuvius/configuration.nix)
+            agenix.nixosModules.default
           ];
         };
       };
@@ -62,6 +67,12 @@
             fastfetch --pipe false | ponysay -b round -W 120 -f "$(hostname)"
           fi
         '';
+      };
+
+      devShells.default = pkgs.mkShell {
+        packages = [
+          agenix.packages.${system}.default
+        ];
       };
     };
   };
