@@ -10,7 +10,7 @@
 
   services.zfs.autoScrub.enable = true;
 
-  fileSystems."/mount/forge" = {
+  fileSystems."/forge" = {
     device = "forge";
     fsType = "zfs";
   };
