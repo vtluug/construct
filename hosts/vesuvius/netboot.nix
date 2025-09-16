@@ -1,11 +1,11 @@
 { config, pkgs, ... }:
 let
   dom_ip = "10.98.2.1";
+  dhcp_iface = "enp1s0f1";
+  client_range = "10.98.2.2,10.98.2.100";
 
   sub_image = pkgs.nixos {
     imports = [ "${pkgs.path}/nixos/modules/installer/netboot/netboot-minimal.nix" ];
-    system.build.squashfs.enable = true;
-
 
     system.stateVersion = "25.05";
     services.openssh = {
@@ -36,6 +36,8 @@ let
     { name = "boot.ipxe"; path = ipxe_config; }
   ];
 
+  # fyi this is cause tftpd in dnsmasq chroots and wouldn't follow external symlinks
+  #  like the ones in a linkfarm
   tftproot = pkgs.runCommand "tftproot-real" {} ''
     mkdir -p $out
     cp ${ipxe_config} $out/boot.ipxe
@@ -43,7 +45,7 @@ let
   '';
 in
 {
-  networking.interfaces."enp1s0f1".ipv4.addresses = [
+  networking.interfaces."${dhcp_iface}".ipv4.addresses = [
     {
       address = dom_ip;
       prefixLength = 24;
@@ -54,8 +56,8 @@ in
     enable = true;
     settings.enable-tftp = true;
     settings.tftp-root = "${tftproot}";
-    settings.dhcp-range = "10.98.2.2,10.98.2.100,12h";
-    settings.dhcp-option = [ "option:router,10.98.2.1" ];
+    settings.dhcp-range = "${client_range},12h";
+    settings.dhcp-option = [ "option:router,${dom_ip}" ];
     settings.dhcp-userclass = [ "set:ipxe,iPXE" ];
     settings.dhcp-boot = [
       "tag:!ipxe,ipxe.efi"
