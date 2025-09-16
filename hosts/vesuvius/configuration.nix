@@ -4,6 +4,7 @@
     ./hardware-configuration.nix
     ./nix.nix
     ./zfs.nix
+    ./netboot.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
@@ -12,6 +13,7 @@
   networking.hostName = "vesuvius";
 
   networking.networkmanager.enable = true;
+  networking.networkmanager.unmanaged = [ "interface-name:enp1s0f1" ];
 
   time.timeZone = "America/New_York";
 
