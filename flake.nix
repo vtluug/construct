@@ -30,12 +30,6 @@
             agenix.nixosModules.default
           ];
         };
-        zerocool = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            (import ./hosts/zerocool/configuration.nix)
-          ];
-        };
       };
     };
 
@@ -52,12 +46,12 @@
 
         echo "building $TARGET_HOST_NAME and deploying to $TARGET_HOST_ADDRESS"
 
-        NIX_SSHOPTS="-o ForwardAgent=yes -J ladmin@tacomanarrows.wuvt.vt.edu" \
+        NIX_SSHOPTS="-o ForwardAgent=yes -J acidburn.vtluug.org" \
         ${pkgs.nixos-rebuild}/bin/nixos-rebuild switch \
           --fast --flake ".#$TARGET_HOST_NAME" \
           --use-remote-sudo \
           --target-host "papatux@$TARGET_HOST_ADDRESS" \
-          --build-host "papatux@$TARGET_HOST_ADDRESS" --show-trace
+          --build-host "papatux@$TARGET_HOST_ADDRESS"
       '';
 
       packages.ponyfetch = pkgs.writeShellApplication {
