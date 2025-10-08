@@ -30,6 +30,12 @@
             agenix.nixosModules.default
           ];
         };
+        zerocool = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            (import ./hosts/zerocool/configuration.nix)
+          ];
+        };
       };
     };
 
