@@ -34,6 +34,7 @@
           system = "x86_64-linux";
           modules = [
             (import ./hosts/zerocool/configuration.nix)
+            agenix.nixosModules.default
           ];
         };
       };
