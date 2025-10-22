@@ -4,6 +4,7 @@ let
   lan_iface = "enp3s0f1";
   wg_iface  = "wg0";
   lan_addr  = "10.98.4.1";
+  lan_cidr  = 22;
 in
 {
   imports =
@@ -16,7 +17,7 @@ in
 
       ./dns.nix
       (import ./router.nix {
-        inherit wan_iface lan_iface lan_addr wg_iface;
+        inherit wan_iface lan_iface lan_addr lan_cidr wg_iface;
       })
       (import ./firewall.nix {
         inherit lan_iface;

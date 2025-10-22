@@ -1,4 +1,4 @@
-{ wan_iface, lan_iface, lan_addr, wg_iface, ... }:
+{ wan_iface, lan_iface, lan_addr, lan_cidr, wg_iface, ... }:
 {
   boot.kernel.sysctl = {
     "net.ipv4.conf.all.forwarding" = true;
@@ -18,7 +18,7 @@
       ipv4.addresses = [
         {
           address = lan_addr;
-          prefixLength = 22;
+          prefixLength = lan_cidr;
         }
       ];
     };
