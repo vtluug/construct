@@ -17,7 +17,7 @@
           endpoint = "128.173.88.191:51820";
           allowedIPs = [ 
             "10.98.255.1/32" # wg fabric
-            "10.98.0.0/21" # whit
+            "10.98.0.0/22" # whit
           ];
           persistentKeepalive = 25;
         }
