@@ -1,13 +1,12 @@
-{ wg_iface }:
+{ config, wg_iface }:
 {
-  #age.secrets."zerocool_wg_private".file = ../../secrets/zerocool_wg_private.age;
+  age.secrets."wg.priv".file = ../../secrets/zerocool/wg.priv.age;
   networking.wireguard.interfaces = {
     "${wg_iface}" = {
       ips = [ "10.98.255.2/32" ];
       listenPort = 51820;
 
-      #privateKeyFile = config.age.secrets."zerocool_wg_private".path;
-      privateKey = (import ../../secrets/zerocool_wg.nix).private;
+      privateKeyFile = config.age.secrets."wg.priv".path;
 
       allowedIPsAsRoutes = true;
 

@@ -28,7 +28,7 @@ in
         dhcp_end = "10.98.5.127";
       })
       (import ./wireguard.nix {
-        inherit wg_iface;
+        inherit config wg_iface;
       })
     ];
 
