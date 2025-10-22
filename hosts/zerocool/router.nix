@@ -10,9 +10,15 @@
   };
 
   networking.useDHCP = false;
+  networking.defaultGateway = "198.82.185.129";
   networking.interfaces = {
     "${wan_iface}" = {
-      useDHCP = true;
+      ipv4.addresses = [
+        {
+          address = "198.82.185.170";
+          prefixLength = 22;
+        }
+      ];
     };
     "${lan_iface}" = {
       ipv4.addresses = [
