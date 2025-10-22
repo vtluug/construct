@@ -18,6 +18,9 @@ in
       ./dns.nix
       (import ./router.nix {
         inherit wan_iface lan_iface lan_addr lan_cidr wg_iface;
+        wan_gateway = "198.82.185.129";
+        wan_addr = "198.82.185.170";
+        wan_cidr = 22;
       })
       (import ./firewall.nix {
         inherit lan_iface;
