@@ -1,38 +1,31 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 let
   dom_ip = "10.98.2.1";
   dhcp_iface = "enp1s0f1";
   client_range = "10.98.2.2,10.98.2.100";
 
-  sub_image = pkgs.nixos {
-    imports = [ "${pkgs.path}/nixos/modules/installer/netboot/netboot-minimal.nix" ];
 
-    system.stateVersion = "25.05";
-    services.openssh = {
-      enable = true;
-      settings.PasswordAuthentication = true;
-      settings.KbdInteractiveAuthentication = false;
-    };
+  sub_image = lib.nixosSystem {
+    system = "x86_64-linux";
 
-    users.users.papatux = {
-      isNormalUser = true;
-      description = "papatux";
-      extraGroups = [ "networkmanager" "wheel" ];
-      hashedPassword = "$6$6GnvJWpo8oOWM1tb$GhuldW5iIdS6OuRyq5u1hSSu0VotQCLac7emA.Kui2hWLozR7EIO4Su6PCo5hTRG8iWnAOlGemQVyejIA9l4j/";
-      openssh.authorizedKeys.keys = import ../../papatux-keys.nix;
-    };
+    modules = [
+      ../prospit/configuration.nix
+    ];
   };
-  
+
+  prospit = sub_image.config.system.build;
+
   ipxe_config = pkgs.writeText "boot.ipxe" ''
     #!ipxe
-    kernel http://${dom_ip}:8080/netboot-nixtest/kernel init=/init boot.shell_on_fail
-    initrd http://${dom_ip}:8080/netboot-nixtest/initrd
+    kernel http://${dom_ip}:8080/netboot-kernel/bzImage init=${prospit.toplevel}/init boot.shell_on_fail
+    initrd http://${dom_ip}:8080/netboot-initrd/initrd
 
     boot
   '';
 
   webroot = pkgs.linkFarm "netboot" [
-    { name = "netboot-nixtest"; path = sub_image.config.system.build.toplevel; }
+    { name = "netboot-kernel"; path = prospit.kernel; }
+    { name = "netboot-initrd"; path = prospit.netbootRamdisk; }
     { name = "boot.ipxe"; path = ipxe_config; }
   ];
 
@@ -61,7 +54,7 @@ in
     settings.dhcp-userclass = [ "set:ipxe,iPXE" ];
     settings.dhcp-boot = [
       "tag:!ipxe,ipxe.efi"
-      "http://${dom_ip}:8080/boot.ipxe" 
+      "http://${dom_ip}:8080/boot.ipxe"
     ];
   };
 
