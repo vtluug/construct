@@ -50,7 +50,7 @@ in
   services.dnsmasq = {
     enable = true;
     settings.domain = "hephaestus.vtluug.org";
-    settings.interface = "enp1s0f1";
+    settings.interface = "${dhcp_iface}";
     settings.bind-interfaces = true;
     settings.server = [ "${dns_server_ip}" ];
     settings.enable-tftp = true;
