@@ -1,8 +1,10 @@
 { config, lib, pkgs, ... }:
 let
-  dom_ip = "10.98.2.1";
+  dom_ip = "10.98.3.2";
+  vlan_router_ip = "10.98.3.1";
+  dns_server_ip = "10.98.0.1";
   dhcp_iface = "enp1s0f1";
-  client_range = "10.98.2.2,10.98.2.100";
+  client_range = "10.98.3.3,10.98.3.100";
 
 
   sub_image = lib.nixosSystem {
@@ -47,10 +49,14 @@ in
 
   services.dnsmasq = {
     enable = true;
+    settings.domain = "hephaestus.vtluug.org";
+    settings.interface = "enp1s0f1";
+    settings.bind-interfaces = true;
+    settings.server = [ "${dns_server_ip}" ];
     settings.enable-tftp = true;
     settings.tftp-root = "${tftproot}";
     settings.dhcp-range = "${client_range},12h";
-    settings.dhcp-option = [ "option:router,${dom_ip}" ];
+    settings.dhcp-option = [ "option:router,${vlan_router_ip}" ];
     settings.dhcp-userclass = [ "set:ipxe,iPXE" ];
     settings.dhcp-boot = [
       "tag:!ipxe,ipxe.efi"
