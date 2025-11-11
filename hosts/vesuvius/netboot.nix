@@ -11,23 +11,23 @@ let
     system = "x86_64-linux";
 
     modules = [
-      ../prospit/configuration.nix
+      ../bastille/blade.nix
     ];
   };
 
-  prospit = sub_image.config.system.build;
+  blade = sub_image.config.system.build;
 
   ipxe_config = pkgs.writeText "boot.ipxe" ''
     #!ipxe
-    kernel http://${dom_ip}:8080/netboot-kernel/bzImage init=${prospit.toplevel}/init boot.shell_on_fail
+    kernel http://${dom_ip}:8080/netboot-kernel/bzImage init=${blade.toplevel}/init boot.shell_on_fail
     initrd http://${dom_ip}:8080/netboot-initrd/initrd
 
     boot
   '';
 
   webroot = pkgs.linkFarm "netboot" [
-    { name = "netboot-kernel"; path = prospit.kernel; }
-    { name = "netboot-initrd"; path = prospit.netbootRamdisk; }
+    { name = "netboot-kernel"; path = blade.kernel; }
+    { name = "netboot-initrd"; path = blade.netbootRamdisk; }
     { name = "boot.ipxe"; path = ipxe_config; }
   ];
 
