@@ -1,6 +1,6 @@
 { modulesPath, pkgs, ... }: {
   imports = [
-    ../common/k3s.nix
+    ../k3s.nix
     ../common/nix.nix
     ../common/sshd.nix
     ../common/users-local.nix
