@@ -56,7 +56,7 @@ in
 
   services.dnsmasq = {
     enable = true;
-    settings.domain = "hephaestus.vtluug.org";
+    settings.domain = "bastille.vtluug.org";
     settings.interface = "${dhcp_iface}";
     settings.bind-interfaces = true;
     settings.server = [ "${dns_server_ip}" ];
