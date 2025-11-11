@@ -22,7 +22,7 @@ in
         wan_addr = "198.82.185.170";
         wan_cidr = 22;
         wan_addr6 = "2001:468:c80:6119:82c1:6eff:fe21:2b88";
-        wan_cidr = 64;
+        wan_cidr6 = 64;
       })
       (import ./firewall.nix {
         inherit lan_iface;
@@ -37,10 +37,7 @@ in
       })
     ];
 
-  boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/sda";
   networking.hostName = "zerocool";
-
   system.stateVersion = "25.05";
 }
 
