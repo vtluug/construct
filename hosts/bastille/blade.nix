@@ -1,5 +1,6 @@
 { modulesPath, pkgs, lib, ... }: {
   imports = [
+    ./auto-hostname.nix
     (import ../common/k3s.nix {})
     ../common/nix.nix
     ../common/sshd.nix
