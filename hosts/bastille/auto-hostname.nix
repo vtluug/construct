@@ -1,6 +1,9 @@
 { pkgs, lib, ... }:
 let
-  # TODO: make this like a python script with a list of interfaces in order of preference
+  names = import ./blade-names.nix;
+
+  bash-sets = lib.mapAttrsToList (mac: name: "names['${mac}']='${name}'") names;
+
   auto-hostname = pkgs.writeShellApplication {
     name = "auto-hostname";
 
@@ -15,9 +18,22 @@ let
         mac_file=/sys/class/net/enp0s25/address
       fi
 
-      mac=$(cat $mac_file | tr -d '\r\n ' | tr ':' '-')
+      mac=$(cat $mac_file | tr -d '\r\n ')
 
-      hostname "blade-$mac"
+      declare -A names
+      ${lib.concatLines bash-sets}
+
+      if [[ -v names[$mac] ]]; then
+        name=''${names[$mac]}
+      else
+        name="node-(echo $mac | tr ':' '-')"
+      fi
+
+      echo "mac:  '$mac'"
+      echo "name: '$name'"
+
+      hostname "$name"
+      echo "hostname set to '$(hostname)'"
     '';
   };
 in {
