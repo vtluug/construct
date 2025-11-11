@@ -1,12 +1,10 @@
 { ... }: {
   imports = [
-    ../common/k3s-ports.nix
+    ../common/k3s.nix
   ];
 
   services.k3s = {
-    enable = true;
     role = "server";
-    token = "garbage secret";
     clusterInit = true;
   };
 }
