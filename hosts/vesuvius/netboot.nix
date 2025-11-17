@@ -1,38 +1,33 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 let
-  dom_ip = "10.98.2.1";
+  dom_ip = "10.98.3.2";
+  vlan_router_ip = "10.98.3.1";
+  dns_server_ip = "10.98.0.1";
   dhcp_iface = "enp1s0f1";
-  client_range = "10.98.2.2,10.98.2.100";
+  client_range = "10.98.3.3,10.98.3.100";
 
-  sub_image = pkgs.nixos {
-    imports = [ "${pkgs.path}/nixos/modules/installer/netboot/netboot-minimal.nix" ];
 
-    system.stateVersion = "25.05";
-    services.openssh = {
-      enable = true;
-      settings.PasswordAuthentication = true;
-      settings.KbdInteractiveAuthentication = false;
-    };
+  sub_image = lib.nixosSystem {
+    system = "x86_64-linux";
 
-    users.users.papatux = {
-      isNormalUser = true;
-      description = "papatux";
-      extraGroups = [ "networkmanager" "wheel" ];
-      hashedPassword = "$6$6GnvJWpo8oOWM1tb$GhuldW5iIdS6OuRyq5u1hSSu0VotQCLac7emA.Kui2hWLozR7EIO4Su6PCo5hTRG8iWnAOlGemQVyejIA9l4j/";
-      openssh.authorizedKeys.keys = import ../../papatux-keys.nix;
-    };
+    modules = [
+      ../bastille/blade.nix
+    ];
   };
-  
+
+  blade = sub_image.config.system.build;
+
   ipxe_config = pkgs.writeText "boot.ipxe" ''
     #!ipxe
-    kernel http://${dom_ip}:8080/netboot-nixtest/kernel init=/init boot.shell_on_fail
-    initrd http://${dom_ip}:8080/netboot-nixtest/initrd
+    kernel http://${dom_ip}:8080/netboot-kernel/bzImage init=${blade.toplevel}/init boot.shell_on_fail
+    initrd http://${dom_ip}:8080/netboot-initrd/initrd
 
     boot
   '';
 
   webroot = pkgs.linkFarm "netboot" [
-    { name = "netboot-nixtest"; path = sub_image.config.system.build.toplevel; }
+    { name = "netboot-kernel"; path = blade.kernel; }
+    { name = "netboot-initrd"; path = blade.netbootRamdisk; }
     { name = "boot.ipxe"; path = ipxe_config; }
   ];
 
@@ -54,14 +49,18 @@ in
 
   services.dnsmasq = {
     enable = true;
+    settings.domain = "bastille.vtluug.org";
+    settings.interface = "${dhcp_iface}";
+    settings.bind-interfaces = true;
+    settings.server = [ "${dns_server_ip}" ];
     settings.enable-tftp = true;
     settings.tftp-root = "${tftproot}";
     settings.dhcp-range = "${client_range},12h";
-    settings.dhcp-option = [ "option:router,${dom_ip}" ];
+    settings.dhcp-option = [ "option:router,${vlan_router_ip}" ];
     settings.dhcp-userclass = [ "set:ipxe,iPXE" ];
     settings.dhcp-boot = [
       "tag:!ipxe,ipxe.efi"
-      "http://${dom_ip}:8080/boot.ipxe" 
+      "http://${dom_ip}:8080/boot.ipxe"
     ];
   };
 
