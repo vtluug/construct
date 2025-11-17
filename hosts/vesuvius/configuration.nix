@@ -3,6 +3,7 @@
   imports = [
     ./hardware-configuration.nix
     (import ../common/k3s.nix { role = "server"; clusterInit = true; })
+    ../common/kvm.nix
     ./nix.nix
     ./zfs.nix
     ./netboot.nix
