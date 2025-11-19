@@ -1,4 +1,4 @@
-{ wan_gateway, wan_iface, wan_addr, wan_cidr, wan_addr6, wan_cidr6, lan_iface, lan_addr, lan_cidr, wg_iface, ... }:
+{ wan_gateway, wan_gateway6, wan_iface, wan_addr, wan_cidr, wan_addr6, wan_cidr6, lan_iface, lan_addr, lan_cidr, wg_iface, ... }:
 {
   boot.kernel.sysctl = {
     "net.ipv4.conf.all.forwarding" = true;
@@ -12,6 +12,10 @@
 
   networking.useDHCP = false;
   networking.defaultGateway = wan_gateway;
+  networking.defaultGateway6 = {
+    address = wan_gateway6;
+    interface = wan_iface;
+  };
   networking.interfaces = {
     "${wan_iface}" = {
       ipv4.addresses = [

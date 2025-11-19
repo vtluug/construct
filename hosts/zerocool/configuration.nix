@@ -19,6 +19,7 @@ in
       (import ./router.nix {
         inherit wan_iface lan_iface lan_addr lan_cidr wg_iface;
         wan_gateway = "198.82.185.129";
+        wan_gateway6 = "2001:468:c80:6119::1";
         wan_addr = "198.82.185.170";
         wan_cidr = 22;
         wan_addr6 = "2001:468:c80:6119:82c1:6eff:fe21:2b88";
