@@ -12,6 +12,6 @@
 
     enable = true;
     token = "garbage secret";
-    serverAddr = "https://10.98.1.147:6443";
+    serverAddr = "https://10.98.3.2:6443";
   };
 }
