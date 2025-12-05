@@ -1,10 +1,68 @@
 { config, lib, pkgs, ... }:
 let
   wan_iface = "enp3s0f0";
-  lan_iface = "enp3s0f1";
+  wan = {
+    ipv4 = {
+      gateway = "198.82.185.129";
+      address = "198.82.185.170";
+      cidr = 22;
+    };
+    ipv6 = {
+      gateway = "2001:468:c80:6119::1";
+      address = "2001:468:c80:6119:82c1:6eff:fe21:2b88";
+      cidr = 60;
+    };
+  };
+
   wg_iface  = "wg0";
-  lan_addr  = "10.98.4.1";
-  lan_cidr  = 22;
+
+  lan_iface = "enp3s0f1";
+  lan = {
+    # Static hosts
+    "10" = {
+      ipv4 = {
+        address = "10.98.4.1";
+        cidr = 24;
+      };
+      ipv6 = {
+        address = "2607:b400:c:ce80::1";
+        cidr = 64;
+      };
+    };
+    # Dynamic host
+    "20" = {
+      ipv4 = {
+        address = "10.98.5.1";
+        cidr = 24;
+      };
+      ipv6 = {
+        address = "2607:b400:c:ce81::1";
+        cidr = 64;
+      };
+    };
+    # Co-location stuff
+    "30" = {
+      ipv4 = {
+        address = "10.98.6.1";
+        cidr = 24;
+      };
+      ipv6 = {
+        address = "2607:b400:c:ce82::1";
+        cidr = 64;
+      };
+    };
+    # Management
+    "40" = {
+      ipv4 = {
+        address = "10.98.7.1";
+        cidr = 24;
+      };
+      ipv6 = {
+        address = "2607:b400:c:ce83::1";
+        cidr = 64;
+      };
+    };
+  };
 in
 {
   imports =
@@ -17,13 +75,13 @@ in
 
       ./dns.nix
       (import ./router.nix {
-        inherit wan_iface lan_iface lan_addr lan_cidr wg_iface;
-        wan_gateway = "198.82.185.129";
-        wan_gateway6 = "2001:468:c80:6119::1";
-        wan_addr = "198.82.185.170";
-        wan_cidr = 22;
-        wan_addr6 = "2001:468:c80:6119:82c1:6eff:fe21:2b88";
-        wan_cidr6 = 64;
+        inherit wan_iface lan_iface wg_iface;
+      })
+      (import ./lan.nix {
+        inherit lib lan_iface lan;
+      })
+      (import ./wan.nix {
+        inherit wan_iface wan;
       })
       (import ./firewall.nix {
         inherit lan_iface;
