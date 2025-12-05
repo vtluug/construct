@@ -15,7 +15,6 @@
     }) (builtins.attrNames lan)
   );
 
-  # recursiveUpdate appends generated interface attrset with existing one to avoid overwriting existing configuration
   networking.interfaces = builtins.listToAttrs (
     builtins.map (e: {
       name = "vlan${e.fst}";
