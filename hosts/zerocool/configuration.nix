@@ -25,7 +25,7 @@ let
         cidr = 24;
       };
       ipv6 = {
-        address = "2607:b400:c:ce80::1";
+        address = "2607:b400:6:ce80::1";
         cidr = 64;
       };
     };
@@ -36,7 +36,7 @@ let
         cidr = 24;
       };
       ipv6 = {
-        address = "2607:b400:c:ce81::1";
+        address = "2607:b400:6:ce81::1";
         cidr = 64;
       };
     };
@@ -47,7 +47,7 @@ let
         cidr = 24;
       };
       ipv6 = {
-        address = "2607:b400:c:ce82::1";
+        address = "2607:b400:6:ce82::1";
         cidr = 64;
       };
     };
@@ -58,7 +58,7 @@ let
         cidr = 24;
       };
       ipv6 = {
-        address = "2607:b400:c:ce83::1";
+        address = "2607:b400:6:ce83::1";
         cidr = 64;
       };
     };
@@ -75,7 +75,7 @@ in
 
       ./dns.nix
       (import ./router.nix {
-        inherit wan_iface lan_iface wg_iface;
+        inherit wan_iface wg_iface lan_iface lan;
       })
       (import ./lan.nix {
         inherit lib lan_iface lan;
