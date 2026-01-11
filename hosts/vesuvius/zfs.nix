@@ -13,5 +13,13 @@
   fileSystems."/forge" = {
     device = "forge";
     fsType = "zfs";
+    neededForBoot = true;
+  };
+
+  fileSystems."/nix" = {
+    device = "/forge/nix";
+    fsType = "none";
+    options = [ "bind" ];
+    depends = [ "/forge" ];
   };
 }
