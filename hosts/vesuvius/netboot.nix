@@ -74,6 +74,6 @@ in
 
   networking.firewall = {
     allowedTCPPorts = [ 8080 ];
-    allowedUDPPorts = [ 67 69 ];
+    allowedUDPPorts = [ 53 67 69 ];
   };
 }
