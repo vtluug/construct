@@ -5,6 +5,7 @@
     (import ../common/k3s.nix { role = "server"; clusterInit = true; })
     ./nix.nix
     ./zfs.nix
+    ./ipa.nix
     ./netboot.nix
   ];
 
