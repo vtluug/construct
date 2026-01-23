@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   dom_ip = "10.98.3.2";
   vlan_router_ip = "10.98.3.1";
@@ -6,6 +11,7 @@ let
   dhcp_iface = "enp1s0f1";
   client_range = "10.98.3.3,10.98.3.100";
 
+  netboot-hostnames = import ../bastille/blade-names.nix;
 
   sub_image = lib.nixosSystem {
     system = "x86_64-linux";
@@ -26,14 +32,23 @@ let
   '';
 
   webroot = pkgs.linkFarm "netboot" [
-    { name = "netboot-kernel"; path = blade.kernel; }
-    { name = "netboot-initrd"; path = blade.netbootRamdisk; }
-    { name = "boot.ipxe"; path = ipxe_config; }
+    {
+      name = "netboot-kernel";
+      path = blade.kernel;
+    }
+    {
+      name = "netboot-initrd";
+      path = blade.netbootRamdisk;
+    }
+    {
+      name = "boot.ipxe";
+      path = ipxe_config;
+    }
   ];
 
   # fyi this is cause tftpd in dnsmasq chroots and wouldn't follow external symlinks
   #  like the ones in a linkfarm
-  tftproot = pkgs.runCommand "tftproot-real" {} ''
+  tftproot = pkgs.runCommand "tftproot-real" { } ''
     mkdir -p $out
     cp ${ipxe_config} $out/boot.ipxe
     cp ${pkgs.ipxe}/ipxe.efi $out/ipxe.efi
@@ -62,18 +77,33 @@ in
       "tag:!ipxe,ipxe.efi"
       "http://${dom_ip}:8080/boot.ipxe"
     ];
+    # Set hostnames via DHCP
+    settings.dhcp-host = builtins.map (host: "${host.fst},${host.snd}") (
+      lib.lists.filter (host: !lib.strings.hasInfix "unassigned" host.fst) (
+        lib.lists.zipLists (builtins.attrNames netboot-hostnames) (builtins.attrValues netboot-hostnames)
+      )
+    );
   };
 
   services.nginx = {
     enable = true;
     virtualHosts."netboot" = {
-      listen = [{ port = 8080; addr = "0.0.0.0"; }];
+      listen = [
+        {
+          port = 8080;
+          addr = "0.0.0.0";
+        }
+      ];
       locations."/".root = "${webroot}";
     };
   };
 
   networking.firewall = {
     allowedTCPPorts = [ 8080 ];
-    allowedUDPPorts = [ 53 67 69 ];
+    allowedUDPPorts = [
+      53
+      67
+      69
+    ];
   };
 }
