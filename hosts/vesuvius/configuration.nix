@@ -8,6 +8,7 @@
     ./ipa.nix
     ./netboot.nix
 
+    ../common/nfs.nix
     ../common/tz-locale.nix
     ../common/users-local.nix
     ../common/sshd.nix
