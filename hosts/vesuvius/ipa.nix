@@ -1,4 +1,3 @@
-# TODO: /etc/krb5.keytab missing, maybe agenix
 { config, pkgs, ... }:
 {
   age.secrets."krb5.keytab" = {
