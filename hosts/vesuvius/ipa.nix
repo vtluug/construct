@@ -28,11 +28,11 @@
   };
   security.sudo.extraRules = [
     {
-      groups = [ "sudoers" ];
+      groups = [ "admins" ];
       commands = [
         {
           command = "ALL";
-          options = [ "SETENV" ];
+          options = ["SETENV" "NOPASSWD"];
         }
       ];
     }
