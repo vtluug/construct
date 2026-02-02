@@ -7,6 +7,7 @@
     ./zfs.nix
     ./ipa.nix
     ./netboot.nix
+    ./nfs-export.nix
 
     ../common/nfs.nix
     ../common/tz-locale.nix
