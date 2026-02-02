@@ -83,6 +83,9 @@ in
         lib.lists.zipLists (builtins.attrNames netboot-hostnames) (builtins.attrValues netboot-hostnames)
       )
     );
+    setting.address = [
+      "/vesuvius.bastille.vtluug.org/${dom_ip}"
+    ];
   };
 
   services.nginx = {
