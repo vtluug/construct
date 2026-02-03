@@ -83,8 +83,12 @@ in
         lib.lists.zipLists (builtins.attrNames netboot-hostnames) (builtins.attrValues netboot-hostnames)
       )
     );
-    setting.address = [
+    settings.address = [
       "/vesuvius.bastille.vtluug.org/${dom_ip}"
+      "/svc.bastille.vtluug.org/${dom_ip}"
+    ];
+    settings.local = [
+      "/svc.bastille.vtluug.org/"
     ];
   };
 
@@ -104,13 +108,16 @@ in
   networking.firewall = {
     allowedTCPPorts = [
       2049
+      6443
       8080
+      10250
     ];
     allowedUDPPorts = [
       53
       67
       69
       2049
+      8472
     ];
   };
 }

@@ -11,6 +11,18 @@
   # Get hostname from DHCP request
   networking.hostName = "";
 
+  # Open kubernetes' ports for flannel and API server
+  networking.firewall = {
+    allowedTCPPorts = [
+      6443
+      10250
+    ];
+    allowedUDPPorts = [
+      8472
+    ];
+  };
+
+
   # when making the ISO, the initialHashedPassword is set to "" for some reason
   # we already set a hashed password, so null this
   users.users.root.initialHashedPassword = lib.mkForce null;
