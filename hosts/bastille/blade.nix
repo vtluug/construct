@@ -1,7 +1,7 @@
 { modulesPath, pkgs, lib, ... }: {
   imports = [
     ./eno1-imm-disable.nix
-    (import ../common/k3s.nix {})
+    (import ../common/k3s.nix { inherit lib; })
     ../common/nix.nix
     ../common/sshd.nix
     ../common/users-local.nix
@@ -29,6 +29,7 @@
 
   environment.systemPackages = [
     pkgs.fastfetch
+    pkgs.git
   ];
 
   system.stateVersion = "25.11";

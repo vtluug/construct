@@ -1,8 +1,8 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 {
   imports = [
     ./hardware-configuration.nix
-    (import ../common/k3s.nix { role = "server"; clusterInit = true; })
+    (import ../common/k3s.nix { inherit lib; role = "server"; clusterInit = true; })
     ./nix.nix
     ./zfs.nix
     ./ipa.nix
@@ -26,6 +26,7 @@
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
+    git
     neovim
   ];
 
