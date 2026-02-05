@@ -18,13 +18,22 @@
     inherit role clusterInit;
 
     enable = true;
-    token = "garbage secret";
     serverAddr = lib.mkIf (role != "server") "https://${serverAddr}:6443";
-    extraFlags = lib.mkIf (role == "server") [
+    nodeIP = lib.mkIf (role == "server") serverAddr;
+
+    extraFlags = [
+      "--write-kubeconfig-mode=0640"
+      "--write-kubeconfig-group=wheel"
+      "--token=\"garbage secret\""
+    ]
+    ++ lib.optionals (role == "server") [
+      "--kubelet-arg=node-ip=${serverAddr}"
       "--flannel-iface=${flannelIface}"
-      "--node-ip=${serverAddr}"
       "--advertise-address=${serverAddr}"
       "--bind-address=${serverAddr}"
     ];
+    extraKubeletConfig = lib.mkIf (role == "server") {
+      address = serverAddr;
+    };
   };
 }
