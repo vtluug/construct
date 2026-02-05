@@ -23,6 +23,14 @@
   networking.networkmanager.enable = true;
   networking.networkmanager.unmanaged = [ "interface-name:enp1s0f1" ];
 
+  networking.interfaces.enp1s0f1.ipv4.routes = [
+    {
+      address = "10.98.0.0";
+      prefixLength = 16;
+      via = "10.98.3.1";
+    }
+  ];
+
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
