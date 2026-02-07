@@ -8,6 +8,7 @@
     ./ipa.nix
     ./netboot.nix
     ./nfs-export.nix
+    (import ./network.nix { inherit config lib pkgs; })
 
     ../common/nfs.nix
     ../common/tz-locale.nix
@@ -17,19 +18,6 @@
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  networking.hostName = "vesuvius";
-
-  networking.networkmanager.enable = true;
-  networking.networkmanager.unmanaged = [ "interface-name:enp1s0f1" ];
-
-  networking.interfaces.enp1s0f1.ipv4.routes = [
-    {
-      address = "10.98.0.0";
-      prefixLength = 16;
-      via = "10.98.3.1";
-    }
-  ];
 
   nixpkgs.config.allowUnfree = true;
 

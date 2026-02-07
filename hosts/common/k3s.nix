@@ -22,8 +22,6 @@
     nodeIP = lib.mkIf (role == "server") serverAddr;
 
     extraFlags = [
-      "--write-kubeconfig-mode=0640"
-      "--write-kubeconfig-group=wheel"
       "--token=\"garbage secret\""
     ]
     ++ lib.optionals (role == "server") [
@@ -31,6 +29,8 @@
       "--flannel-iface=${flannelIface}"
       "--advertise-address=${serverAddr}"
       "--bind-address=${serverAddr}"
+      "--write-kubeconfig-mode=0640"
+      "--write-kubeconfig-group=wheel"
     ];
     extraKubeletConfig = lib.mkIf (role == "server") {
       address = serverAddr;
