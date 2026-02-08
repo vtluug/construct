@@ -39,8 +39,8 @@
 
         services.caddy = {
           enable = true;
-          virtualHosts."ephemeral.vtluug.org".extraConfig = ''
-            reverse_proxy http://ephemeral-chat.svc.bastille.vtluug.org:80
+          virtualHosts."*.vtluug.org".extraConfig = ''
+            reverse_proxy {labels.1}.svc.bastille.vtluug.org:80
           '';
         };
 

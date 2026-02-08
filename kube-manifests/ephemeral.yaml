@@ -49,7 +49,7 @@ metadata:
   name: ephemeral-chat-ingress
 spec:
   rules:
-  - host: "ephemeral-chat.svc.bastille.vtluug.org"
+  - host: "ephemeral.svc.bastille.vtluug.org"
     http:
       paths:
       - pathType: Prefix
