@@ -52,15 +52,15 @@ in
           virtualHosts."*.vtluug.org".extraConfig = ''
             reverse_proxy {labels.2}.svc.bastille.vtluug.org:80
           '';
-        package = pkgs.caddy.withPlugins {
-          plugins = [ "github.com/caddy-dns/gandi@v1.1.0" ];
-          hash = "sha256-uxu20MekQ2e0u9To9xiZlENRATwchzVNNXK2aVjZgqE="; 
-        };
-        globalConfig = ''    
+          package = pkgs.caddy.withPlugins {
+            plugins = [ "github.com/caddy-dns/gandi@v1.1.0" ];
+            hash = "sha256-uxu20MekQ2e0u9To9xiZlENRATwchzVNNXK2aVjZgqE=";
+          };
+          globalConfig = ''
             acme_dns gandi {$GANDI_AUTH_TOKEN}
           '';
         };
-        systemd.services.caddy.serviceConfig.EnvironmentFile = ["${gandi-key-path}"];
+        systemd.services.caddy.serviceConfig.EnvironmentFile = [ "${gandi-key-path}" ];
 
         networking.firewall = {
           allowedTCPPorts = [
