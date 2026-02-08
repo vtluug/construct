@@ -9,6 +9,7 @@
     ./netboot.nix
     ./nfs-export.nix
     (import ./network.nix { inherit config lib pkgs; })
+    ./caddy.nix
 
     ../common/nfs.nix
     ../common/tz-locale.nix
