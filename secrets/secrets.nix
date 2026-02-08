@@ -4,4 +4,5 @@ let
 in {
   "keytabs/vesuvius.keytab.age".publicKeys = [ vesuvius ];
   "zerocool/wg.priv.age".publicKeys = [ zerocool ];
+  "vesuvius/gandi.env.age".publicKeys = [ vesuvius ];
 }
