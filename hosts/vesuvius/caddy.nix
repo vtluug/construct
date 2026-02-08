@@ -4,6 +4,9 @@
   lib,
   ...
 }:
+let
+  gandi-key-path = "/secrets/gandi.env";
+in
 {
   age.secrets."gandi.env".file = ../../secrets/vesuvius/gandi.env.age;
 
@@ -13,9 +16,8 @@
     macvlans = [ "eno0" ];
     privateNetwork = false;
     bindMounts = {
-      "/var/lib/caddy/gandi.env" = {
+      "${gandi-key-path}" = {
         hostPath = config.age.secrets."gandi.env".path;
-        isReadOnly = true;
       };
     };
     config =
@@ -54,7 +56,7 @@
             acme_dns gandi {$GANDI_AUTH_TOKEN}
           '';
         };
-        systemd.services.caddy.serviceConfig.EnvironmentFile = ["/var/lib/caddy/gandi.env"];
+        systemd.services.caddy.serviceConfig.EnvironmentFile = ["${gandi-key-path}"];
 
         networking.firewall = {
           allowedTCPPorts = [
