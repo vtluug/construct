@@ -54,7 +54,7 @@ in
           '';
         package = pkgs.caddy.withPlugins {
           plugins = [ "github.com/caddy-dns/gandi@v1.1.0" ];
-          hash = "sha256-uxu20MekQ2e0u9To9xiZlENRATwchzVNNXK2aVjZgqE="; 
+          hash = "sha256-5mjD0CY7f5+sRtV1rXysj8PvId2gQaWiXlIaTg2Lv8A="; 
         };
         globalConfig = ''    
             acme_dns gandi {$GANDI_AUTH_TOKEN}
