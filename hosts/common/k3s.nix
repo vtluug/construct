@@ -25,15 +25,11 @@
       "--token=\"garbage secret\""
     ]
     ++ lib.optionals (role == "server") [
-      "--kubelet-arg=node-ip=${serverAddr}"
       "--flannel-iface=${flannelIface}"
       "--advertise-address=${serverAddr}"
       "--bind-address=${serverAddr}"
       "--write-kubeconfig-mode=0640"
       "--write-kubeconfig-group=wheel"
     ];
-    extraKubeletConfig = lib.mkIf (role == "server") {
-      address = serverAddr;
-    };
   };
 }

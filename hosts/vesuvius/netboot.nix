@@ -64,32 +64,44 @@ in
 
   services.dnsmasq = {
     enable = true;
-    settings.domain = "bastille.vtluug.org";
-    settings.interface = "${dhcp_iface}";
-    settings.bind-interfaces = true;
-    settings.server = [ "${dns_server_ip}" ];
-    settings.enable-tftp = true;
-    settings.tftp-root = "${tftproot}";
-    settings.dhcp-range = "${client_range},12h";
-    settings.dhcp-option = [ "option:router,${vlan_router_ip}" ];
-    settings.dhcp-userclass = [ "set:ipxe,iPXE" ];
-    settings.dhcp-boot = [
-      "tag:!ipxe,ipxe.efi"
-      "http://${dom_ip}:8080/boot.ipxe"
-    ];
-    # Set hostnames via DHCP
-    settings.dhcp-host = builtins.map (host: "${host.fst},${host.snd}") (
-      lib.lists.filter (host: !lib.strings.hasInfix "unassigned" host.fst) (
-        lib.lists.zipLists (builtins.attrNames netboot-hostnames) (builtins.attrValues netboot-hostnames)
-      )
-    );
-    settings.address = [
-      "/vesuvius.bastille.vtluug.org/${dom_ip}"
-      "/svc.bastille.vtluug.org/${dom_ip}"
-    ];
-    settings.local = [
-      "/svc.bastille.vtluug.org/"
-    ];
+    settings = {
+      domain = "bastille.vtluug.org";
+      domain-needed = true;
+      interface = "${dhcp_iface}";
+      bind-interfaces = true;
+      server = [
+        "198.82.247.98"
+        "198.82.247.66"
+        "198.82.247.34"
+        "2001:468:c80:6101:0:100:0:62"
+        "2001:468:c80:4101:0:100:0:42"
+        "2001:468:c80:2101:0:100:0:22"
+        "/whit.vtluug.org/10.98.0.1"
+      ];
+      enable-tftp = true;
+      tftp-root = "${tftproot}";
+      dhcp-range = "${client_range},12h";
+      dhcp-option = [ "option:router,${vlan_router_ip}" ];
+      dhcp-userclass = [ "set:ipxe,iPXE" ];
+      dhcp-boot = [
+        "tag:!ipxe,ipxe.efi"
+        "http://${dom_ip}:8080/boot.ipxe"
+      ];
+      # Set hostnames via DHCP
+      dhcp-host = builtins.map (host: "${host.fst},${host.snd}") (
+        lib.lists.filter (host: !lib.strings.hasInfix "unassigned" host.fst) (
+          lib.lists.zipLists (builtins.attrNames netboot-hostnames) (builtins.attrValues netboot-hostnames)
+        )
+      );
+      address = [
+        "/bastille.vtluug.org/::" # Filter IPv6 so it doesn't just hang forever when resolving every request to local domain
+        "/vesuvius.bastille.vtluug.org/${dom_ip}"
+        "/svc.bastille.vtluug.org/${dom_ip}"
+      ];
+      local = [
+        "/svc.bastille.vtluug.org/"
+      ];
+    };
   };
 
   services.nginx = {
@@ -107,7 +119,6 @@ in
 
   networking.firewall = {
     allowedTCPPorts = [
-      2049
       6443
       8080
       10250
@@ -116,7 +127,6 @@ in
       53
       67
       69
-      2049
       8472
     ];
   };

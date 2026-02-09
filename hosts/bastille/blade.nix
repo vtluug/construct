@@ -8,6 +8,12 @@
     (modulesPath + "/installer/netboot/netboot-minimal.nix")
   ];
 
+  # Get NFS working (not idea why it's not default in NixOS)
+  boot.initrd = {
+    supportedFilesystems = [ "nfs" ];
+    kernelModules = [ "nfs" ];
+  };
+
   # Get hostname from DHCP request
   networking.hostName = "";
 
@@ -27,9 +33,10 @@
   # we already set a hashed password, so null this
   users.users.root.initialHashedPassword = lib.mkForce null;
 
-  environment.systemPackages = [
-    pkgs.fastfetch
-    pkgs.git
+  environment.systemPackages = with pkgs; [
+    fastfetch
+    git
+    nfs-utils
   ];
 
   system.stateVersion = "25.11";

@@ -59,6 +59,7 @@ in
             hash = "sha256-5mjD0CY7f5+sRtV1rXysj8PvId2gQaWiXlIaTg2Lv8A=";
           };
           globalConfig = ''
+            acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
             acme_dns gandi {env.GANDI_AUTH_TOKEN}
           '';
         };
