@@ -59,3 +59,13 @@ spec:
             name: ephemeral-chat-service
             port:
               number: 80
+  - host: "ephemeral.vtluug.org"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: ephemeral-chat-service
+            port:
+              number: 80
