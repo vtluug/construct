@@ -19,6 +19,10 @@ in
       "${gandi-key-path}" = {
         hostPath = config.age.secrets."gandi.env".path;
       };
+      "/var/lib/caddy" = {
+        hostPath = "/var/lib/caddy";
+        isReadOnly = false;
+      };
     };
     config =
       {
