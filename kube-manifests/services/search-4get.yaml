@@ -52,7 +52,7 @@ spec:
         - name: FOURGET_PROTO
           value: "http"
         - name: FOURGET_SERVER_NAME
-          value: "search-staging.vtluug.org"
+          value: "search.vtluug.org"
         - name: FOURGET_SERVER_SHORT_DESCRIPTION
           value: "Virginia Tech Linux & Unix User's Group"
         - name: FOURGET_SERVER_LONG_DESCRIPTION
@@ -99,7 +99,7 @@ metadata:
   name: search-4get-ingress
 spec:
   rules:
-  - host: "search-staging.svc.bastille.vtluug.org"
+  - host: "search.svc.bastille.vtluug.org"
     http:
       paths:
       - pathType: Prefix
