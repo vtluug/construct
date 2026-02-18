@@ -4,7 +4,7 @@
     exports = ''
       /forge/nfs              10.98.0.0/16(rw,sync,fsid=root,no_subtree_check,root_squash,sec=sys) 2607:b400:0006:cc80::/64(rw,sync,fsid=root,no_subtree_check,root_squash,sec=sys) 
       /forge/nfs/kube-volumes 10.98.3.0/24(rw,sync,no_root_squash,insecure,no_subtree_check)
-        '';
+    '';
 
     # fixed rpc.statd port; for firewall
     lockdPort = 4001;

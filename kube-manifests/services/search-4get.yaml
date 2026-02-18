@@ -29,6 +29,8 @@ spec:
       labels:
         app: search-4get
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: "vesuvius"
       volumes:
         - name: search-4get-banner
           persistentVolumeClaim:
