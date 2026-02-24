@@ -54,8 +54,10 @@ in
         services.caddy = {
           enable = true;
           virtualHosts."*.vtluug.org".extraConfig = ''
-            reverse_proxy svc.bastille.vtluug.org:80 {
-              header_up Host {labels.2}.svc.bastille.vtluug.org
+            reverse_proxy https://svc.bastille.vtluug.org:443 {
+              transport http {
+                tls_insecure_skip_verify
+              }
             }
           '';
           package = pkgs.caddy.withPlugins {
