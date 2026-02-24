@@ -74,13 +74,13 @@ spec:
         # otherwise, it'll add the search engine as http://[host], which
         # inevitably resolves to http://search.vtluug.org:443, which obviously
         # just doesn't work
-        # lifecycle:
-        #   postStart:
-        #     exec:
-        #       command:
-        #         - "/bin/sh"
-        #         - "-c"
-        #         - sed -i '2i\$_SERVER[\"HTTPS\"] = \"on\";' opensearch.php
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - "/bin/sh"
+                - "-c"
+                - sed -i '2i\$_SERVER[\"HTTPS\"] = \"on\";' opensearch.php
 ---
 apiVersion: v1
 kind: Service
