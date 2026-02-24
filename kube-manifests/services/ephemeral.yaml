@@ -49,16 +49,6 @@ metadata:
   name: ephemeral-chat-ingress
 spec:
   rules:
-  - host: "ephemeral.svc.bastille.vtluug.org"
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: ephemeral-chat-service
-            port:
-              number: 80
   - host: "ephemeral.vtluug.org"
     http:
       paths:

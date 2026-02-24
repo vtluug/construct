@@ -101,7 +101,7 @@ metadata:
   name: search-4get-ingress
 spec:
   rules:
-  - host: "search.svc.bastille.vtluug.org"
+  - host: "search.vtluug.org"
     http:
       paths:
       - pathType: Prefix
