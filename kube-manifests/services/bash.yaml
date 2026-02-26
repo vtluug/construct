@@ -1,0 +1,89 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bash-nfs-pvc
+  labels:
+    app: bash
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: forge-nfs-csi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bash-deployment
+  labels:
+    app: bash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bash
+  template:
+    metadata:
+      labels:
+        app: bash
+    spec:
+      volumes:
+        - name: bash-sqlite
+          persistentVolumeClaim:
+            claimName: bash-nfs-pvc
+      containers:
+      - name: bash
+        image: ghcr.io/vtluug/pyqdb:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: pyqdb_secret_key
+          valueFrom:
+            secretKeyRef:
+              name: bash-secrets
+              key: pyqdb_secret_key
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: 2
+          limits:
+            memory: 8Gi
+            cpu: 2
+        volumeMounts:
+            - name: bash-sqlite
+              mountPath: /app/quotes.db
+              subPath: quotes.db
+              readOnly: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bash-service
+spec:
+  selector:
+    app: bash
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bash-ingress
+spec:
+  rules:
+  - host: "bash.vtluug.org"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: bash-service
+            port:
+              number: 80
