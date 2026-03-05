@@ -1,13 +1,13 @@
-{ wan_iface, wan, ... }:
+{ wanIface, wan, ... }:
 {
   networking.defaultGateway = wan.ipv4.gateway;
   networking.defaultGateway6 = {
     address = wan.ipv6.gateway;
-    interface = wan_iface;
+    interface = wanIface;
   };
 
   networking.interfaces = {
-    "${wan_iface}" = {
+    "${wanIface}" = {
       useDHCP = false;
       ipv4.addresses = [
         {

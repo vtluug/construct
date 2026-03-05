@@ -1,12 +1,11 @@
 {
   lib,
-  lan_iface,
+  lanIface,
   lan,
   ...
 }:
 let
-  # First element in LAN is always the untagged VLAN
-  untagged_lan_attrs = lib.lists.findFirst (
+  untaggedVlan = lib.lists.findFirst (
     e: builtins.hasAttr "untagged" e
   ) (throw "Must have untagged VLAN") (builtins.attrValues lan);
 in
@@ -17,7 +16,7 @@ in
         name = "vlan${e.fst}";
         value = {
           id = builtins.fromJSON e.fst;
-          interface = lan_iface;
+          interface = lanIface;
         };
       })
       (
@@ -57,19 +56,19 @@ in
     ++ [
       # Untagged (native) VLAN
       {
-        name = lan_iface;
+        name = lanIface;
         value = {
           useDHCP = false;
           ipv4.addresses = [
             {
-              address = untagged_lan_attrs.ipv4.address;
-              prefixLength = untagged_lan_attrs.ipv4.cidr;
+              address = untaggedVlan.ipv4.address;
+              prefixLength = untaggedVlan.ipv4.cidr;
             }
           ];
           ipv6.addresses = [
             {
-              address = untagged_lan_attrs.ipv6.address;
-              prefixLength = untagged_lan_attrs.ipv6.cidr;
+              address = untaggedVlan.ipv6.address;
+              prefixLength = untaggedVlan.ipv6.cidr;
             }
           ];
         };

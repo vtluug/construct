@@ -1,8 +1,8 @@
-{ config, wg_iface }:
+{ config, wgIface }:
 {
   age.secrets."wg.priv".file = ../../secrets/zerocool/wg.priv.age;
   networking.wireguard.interfaces = {
-    "${wg_iface}" = {
+    "${wgIface}" = {
       ips = [ "10.98.255.2/32" ];
       listenPort = 51820;
 

@@ -1,19 +1,19 @@
 {
   lib,
-  lan_iface,
+  lanIface,
   lan,
   ...
 }:
 let
   hosts = import ./static-hosts.nix;
-  dnsmasq-hosts = builtins.map (host: "${host.mac},${host.ipv4},${host.name}") hosts;
+  dnsmasqHosts = builtins.map (host: "${host.mac},${host.ipv4},${host.name}") hosts;
 
-  tagged_vlans = (
+  taggedVlans = (
     builtins.filter (e: !builtins.hasAttr "untagged" e.snd) (
       lib.lists.zipLists (builtins.attrNames lan) (builtins.attrValues lan)
     )
   );
-  untagged_vlan = lib.lists.findFirst (
+  untaggedVlan = lib.lists.findFirst (
     e: builtins.hasAttr "untagged" e
   ) (throw "Must have untagged VLAN") (builtins.attrValues lan);
 in
@@ -22,19 +22,19 @@ in
     enable = true;
     settings = {
       interface = [
-        lan_iface
+        lanIface
       ]
-      ++ builtins.map (e: "vlan${e.fst}") tagged_vlans;
+      ++ builtins.map (e: "vlan${e.fst}") taggedVlans;
       dhcp-range =
-        (lib.lists.optional (builtins.hasAttr "dhcpv4" untagged_vlan) "interface:${lan_iface},${untagged_vlan.dhcpv4}")
-        ++ (lib.lists.optional (builtins.hasAttr "dhcpv6" untagged_vlan) "interface:${lan_iface},::,constructor:${lan_iface},${untagged_vlan.dhcpv6}")
+        (lib.lists.optional (builtins.hasAttr "dhcpv4" untaggedVlan) "interface:${lanIface},${untaggedVlan.dhcpv4}")
+        ++ (lib.lists.optional (builtins.hasAttr "dhcpv6" untaggedVlan) "interface:${lanIface},::,constructor:${lanIface},${untaggedVlan.dhcpv6}")
         ++ (builtins.map (e: "interface:vlan${e.fst},${e.snd.dhcpv4}") (
-          builtins.filter (e: builtins.hasAttr "dhcpv4" e.snd) tagged_vlans
+          builtins.filter (e: builtins.hasAttr "dhcpv4" e.snd) taggedVlans
         ))
         ++ (builtins.map (e: "interface:vlan${e.fst},::,constructor:vlan${e.fst},${e.snd.dhcpv6}") (
-          builtins.filter (e: builtins.hasAttr "dhcpv6" e.snd) tagged_vlans
+          builtins.filter (e: builtins.hasAttr "dhcpv6" e.snd) taggedVlans
         ));
-      dhcp-host = dnsmasq-hosts;
+      dhcp-host = dnsmasqHosts;
     };
   };
 }

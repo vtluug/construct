@@ -5,7 +5,7 @@
   ...
 }:
 let
-  wan_iface = "enp3s0f0";
+  wanIface = "enp3s0f0";
   wan = {
     ipv4 = {
       gateway = "198.82.185.129";
@@ -19,9 +19,9 @@ let
     };
   };
 
-  wg_iface = "wg0";
+  wgIface = "wg0";
 
-  lan_iface = "enp3s0f1";
+  lanIface = "enp3s0f1";
   lan = {
     # Management
     "10" = {
@@ -33,7 +33,7 @@ let
         address = "2607:b400:6:ce80::1";
         cidr = 64;
       };
-      allow_router_access = true;
+      allowRouterAccess = true;
       dhcpv4 = "10.98.4.128,10.98.4.254,12h";
       dhcpv6 = "ra-stateless,ra-names,12h";
     };
@@ -47,7 +47,7 @@ let
         address = "2607:b400:6:ce81::1";
         cidr = 64;
       };
-      allow_router_access = true;
+      allowRouterAccess = true;
       untagged = true;
       dhcpv4 = "10.98.5.128,10.98.5.254,12h";
       dhcpv6 = "ra-stateless,ra-names,12h";
@@ -62,7 +62,7 @@ let
         address = "2607:b400:6:ce82::1";
         cidr = 64;
       };
-      allow_router_access = true;
+      allowRouterAccess = true;
       dhcpv4 = "10.98.6.128,10.98.6.254,12h";
       dhcpv6 = "ra-stateless,ra-names,12h";
     };
@@ -76,13 +76,13 @@ let
         address = "2607:b400:6:ce83::1";
         cidr = 64;
       };
-      allow_router_access = false;
+      allowRouterAccess = false;
       dhcpv4 = "10.98.7.128,10.98.7.254,12h";
       dhcpv6 = "ra-stateless,ra-names,12h";
     };
   };
 
-  check_untagged = lib.asserts.assertMsg (
+  checkUntagged = lib.asserts.assertMsg (
     builtins.length (
       builtins.filter (e: builtins.hasAttr "untagged" e.snd) (
         lib.lists.zipLists (builtins.attrNames lan) (builtins.attrValues lan)
@@ -101,26 +101,26 @@ in
     ./dns.nix
     ./router.nix
     (import ./lan.nix {
-      inherit lib lan_iface lan;
+      inherit lib lanIface lan;
     })
     (import ./dhcp.nix {
-      inherit lib lan_iface lan;
+      inherit lib lanIface lan;
     })
     (import ./wan.nix {
-      inherit wan_iface wan;
+      inherit wanIface wan;
     })
     (import ./firewall.nix {
       inherit
         lib
-        lan_iface
+        lanIface
         lan
-        wan_iface
+        wanIface
         wan
-        wg_iface
+        wgIface
         ;
     })
     (import ./wireguard.nix {
-      inherit config wg_iface;
+      inherit config wgIface;
     })
   ];
 
