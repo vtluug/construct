@@ -16,15 +16,22 @@ let
   untaggedVlan = lib.lists.findFirst (
     e: builtins.hasAttr "untagged" e
   ) (throw "Must have untagged VLAN") (builtins.attrValues lan);
+
+  interfaces = builtins.map (e: "vlan${e.fst}") (
+    builtins.filter (
+      e: (builtins.hasAttr "dhcpv4" e.snd) || (builtins.hasAttr "dhcpv6" e.snd)
+    ) taggedVlans
+  );
 in
 {
   services.dnsmasq = {
     enable = true;
     settings = {
-      interface = [
-        lanIface
-      ]
-      ++ builtins.map (e: "vlan${e.fst}") taggedVlans;
+      interface =
+        (lib.lists.optional (
+          (builtins.hasAttr "dhcpv4" untaggedVlan) || (builtins.hasAttr "dhcpv6" untaggedVlan)
+        ) lanIface)
+        ++ interfaces;
       dhcp-range =
         (lib.lists.optional (builtins.hasAttr "dhcpv4" untaggedVlan) "interface:${lanIface},${untaggedVlan.dhcpv4}")
         ++ (lib.lists.optional (builtins.hasAttr "dhcpv6" untaggedVlan) "interface:${lanIface},::,constructor:${lanIface},${untaggedVlan.dhcpv6}")

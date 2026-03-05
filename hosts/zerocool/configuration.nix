@@ -17,6 +17,12 @@ let
       address = "2001:468:c80:6119:82c1:6eff:fe21:2b88";
       cidr = 60;
     };
+    tcpPorts = [ 22 2222 ];
+    udpPorts = [ 51820 ];
+    # Publicly routable IPv4 addresses only
+    exposeIpv4Hosts = [];
+    # Publicly routable IPv6 addresses only
+    exposeIpv6Hosts = [];
   };
 
   wgIface = "wg0";
