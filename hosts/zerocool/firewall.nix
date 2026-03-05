@@ -7,6 +7,12 @@
   ...
 }:
 let
+  taggedVlans = (
+    builtins.filter (e: !builtins.hasAttr "untagged" e.snd) (
+      lib.lists.zipLists (builtins.attrNames lan) (builtins.attrValues lan)
+    )
+  );
+
   generateInterVlanBlockPairings =
     list:
     builtins.concatLists (
@@ -20,80 +26,43 @@ let
     );
 
   interVlanRoutingBlock = lib.strings.concatStringsSep "\n" (
-    generateInterVlanBlockPairings (
-      builtins.filter (e: !builtins.hasAttr "untagged" e.snd) (
-        lib.lists.zipLists (builtins.attrNames lan) (builtins.attrValues lan)
-      )
-    )
+    generateInterVlanBlockPairings taggedVlans
   );
 
   untaggedInterVlanBlock = lib.strings.concatStringsSep "\n" (
-    builtins.map
-      (e: ''
-        iifname "vlan${e.fst}" oifname "${lanIface}" drop comment "Drop vlan${e.fst} to ${lanIface} traffic"
-        iifname "${lanIface}" oifname "vlan${e.fst}" drop comment "Drop ${lanIface} to vlan${e.fst} traffic"
-      '')
-      (
-        builtins.filter (e: !builtins.hasAttr "untagged" e.snd) (
-          lib.lists.zipLists (builtins.attrNames lan) (builtins.attrValues lan)
-        )
-      )
+    builtins.map (e: ''
+      iifname "vlan${e.fst}" oifname "${lanIface}" drop comment "Drop vlan${e.fst} to ${lanIface} traffic"
+      iifname "${lanIface}" oifname "vlan${e.fst}" drop comment "Drop ${lanIface} to vlan${e.fst} traffic"
+    '') taggedVlans
   );
 
   routerAccess = lib.strings.concatStringsSep "\n" (
-    builtins.map
-      (e: ''iifname { "vlan${e.fst}" } accept comment "Allow vlan${e.fst} to access the router"'')
-      (
-        builtins.filter (e: e.snd.allowRouterAccess && !builtins.hasAttr "untagged" e.snd) (
-          lib.lists.zipLists (builtins.attrNames lan) (builtins.attrValues lan)
-        )
-      )
+    builtins.map (
+      e: ''iifname { "vlan${e.fst}" } accept comment "Allow vlan${e.fst} to access the router"''
+    ) taggedVlans
   );
 
   routerForward = lib.strings.concatStringsSep "\n" (
-    builtins.map
-      (e: ''
-        iifname { "vlan${e.fst}" } oifname { "${wanIface}" } accept comment "Allow vlan${e.fst} to WAN"
-        iifname { "${wanIface}" } oifname { "vlan${e.fst}" } ct state established, related accept comment "Allow established back to vlan${e.fst}"
-      '')
-      (
-        builtins.filter (e: !builtins.hasAttr "untagged" e.snd) (
-          lib.lists.zipLists (builtins.attrNames lan) (builtins.attrValues lan)
-        )
-      )
+    builtins.map (e: ''
+      iifname { "vlan${e.fst}" } oifname { "${wanIface}" } accept comment "Allow vlan${e.fst} to WAN"
+      iifname { "${wanIface}" } oifname { "vlan${e.fst}" } ct state established, related accept comment "Allow established back to vlan${e.fst}"
+    '') taggedVlans
   );
 
   routerIpv6IcmpAccess = lib.strings.concatStringsSep "\n" (
-    builtins.map
-      (e: ''
-        iifname "vlan${e.fst}" ip6 nexthdr icmpv6 icmpv6 type { nd-router-solicit, nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert } counter accept comment "Allow SLAAC and DHCPv6 on vlan${e.fst}"
-      '')
-      (
-        builtins.filter (e: !builtins.hasAttr "untagged" e.snd) (
-          lib.lists.zipLists (builtins.attrNames lan) (builtins.attrValues lan)
-        )
-      )
+    builtins.map (e: ''
+      iifname "vlan${e.fst}" ip6 nexthdr icmpv6 icmpv6 type { nd-router-solicit, nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert } counter accept comment "Allow SLAAC and DHCPv6 on vlan${e.fst}"
+    '') taggedVlans
   );
 
   routerIpv6NdForward = lib.strings.concatStringsSep "\n" (
-    builtins.map
-      (e: ''
-        iifname "vlan${e.fst}" ip6 nexthdr icmpv6 icmpv6 type { nd-router-solicit, nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert } accept comment "Allow essential ND in FORWARD on vlan${e.fst}"
-      '')
-      (
-        builtins.filter (e: !builtins.hasAttr "untagged" e.snd) (
-          lib.lists.zipLists (builtins.attrNames lan) (builtins.attrValues lan)
-        )
-      )
+    builtins.map (e: ''
+      iifname "vlan${e.fst}" ip6 nexthdr icmpv6 icmpv6 type { nd-router-solicit, nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert } accept comment "Allow essential ND in FORWARD on vlan${e.fst}"
+    '') taggedVlans
   );
-
 in
 {
-  networking.firewall = {
-    enable = true;
-    allowPing = true;
-    trustedInterfaces = [ lanIface ];
-  };
+  networking.firewall.enable = true;
 
   networking.nftables = {
     enable = true;
@@ -109,9 +78,11 @@ in
 
           iifname "${wanIface}" ct state { established, related } accept comment "Allow established traffic"
           iifname "${wanIface}" icmp type { echo-request, destination-unreachable, time-exceeded } counter accept comment "Allow select ICMP"
+
           iifname "${wanIface}" tcp dport 2222 accept comment "SSH allow from outside"
           iifname "${wanIface}" tcp dport 22 accept comment "SSH allow from outside"
           iifname "${wanIface}" udp dport 51820 accept comment "Wireguard allow from outside"
+
           iifname "${wanIface}" counter drop comment "Drop all other unsolicited traffic from wan"
 
           iif lo accept comment "Allow all loopback traffic"
@@ -151,9 +122,11 @@ in
 
           iifname "${wanIface}" ct state { established, related } accept comment "Allow established traffic"
           iifname "${wanIface}" icmpv6 type { echo-request, destination-unreachable, time-exceeded } counter accept comment "Allow select ICMP"
+
           iifname "${wanIface}" tcp dport 2222 accept comment "SSH allow from outside"
           iifname "${wanIface}" tcp dport 22 accept comment "SSH allow from outside"
           iifname "${wanIface}" udp dport 51820 accept comment "Wireguard allow from outside"
+
           iifname "${wanIface}" counter drop comment "Drop all other unsolicited traffic from WAN"
 
           iif lo accept comment "Allow all loopback traffic"
