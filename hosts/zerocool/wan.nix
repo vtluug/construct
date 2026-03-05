@@ -9,6 +9,7 @@
   networking.interfaces = {
     "${wanIface}" = {
       useDHCP = false;
+      proxyARP = true;
       ipv4.addresses = [
         {
           address = wan.ipv4.address;
