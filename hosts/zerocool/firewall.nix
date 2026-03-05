@@ -49,7 +49,7 @@ let
     ) (builtins.filter (e: !e.snd.allowRouterAccess) taggedVlans)
   );
 
-  deniedVlanDhcpAccess = lib.strings.concatStringsSep "\n" (
+  deniedVlanDhcpv4Access = lib.strings.concatStringsSep "\n" (
     builtins.map
       (e: ''
         iifname { "vlan${e.fst}" } udp dport { 53, 67 } accept comment "Allow vlan${e.fst} DHCP and DNS access the router"
@@ -58,10 +58,25 @@ let
       (
         builtins.filter (
           e:
-          !e.snd.allowRouterAccess && ((builtins.hasAttr "dhcpv4" e.snd) || (builtins.hasAttr "dhcpv6" e.snd))
+          !e.snd.allowRouterAccess && (builtins.hasAttr "dhcpv4" e.snd)
         ) taggedVlans
       )
   );
+
+  deniedVlanDhcpv6Access = lib.strings.concatStringsSep "\n" (
+    builtins.map
+      (e: ''
+        iifname { "vlan${e.fst}" } udp dport { 53, 547 } accept comment "Allow vlan${e.fst} DHCP and DNS access the router"
+        iifname { "vlan${e.fst}" } tcp dport 53 accept comment "Allow vlan${e.fst} TCP DNS access the router"
+      '')
+      (
+        builtins.filter (
+          e:
+          !e.snd.allowRouterAccess && (builtins.hasAttr "dhcpv6" e.snd)
+        ) taggedVlans
+      )
+  );
+
 
   routerForward = lib.strings.concatStringsSep "\n" (
     builtins.map (e: ''
@@ -119,8 +134,7 @@ in
           iifname { "${lanIface}" } accept comment "Allow local network to access the router"
           iifname { "${wgIface}" } accept comment "Allow wireguard network to access the router"
 
-          ${deniedVlanDhcpAccess}
-          ${routerDenyAccess}
+          ${deniedVlanDhcpv4Access}
           ${routerAccess}
 
           iifname "${wanIface}" ct state { established, related } accept comment "Allow established traffic"
@@ -130,6 +144,8 @@ in
           ${exposedTcpPorts}
 
           iifname "${wanIface}" counter drop comment "Drop all other unsolicited traffic from wan"
+
+          ${routerDenyAccess}
 
           iif lo accept comment "Allow all loopback traffic"
         }
@@ -165,8 +181,7 @@ in
           iifname { "${lanIface}" } accept comment "Allow local network to access the router"
           iifname { "${wgIface}" } accept comment "Allow wireguard to access the router"
 
-          ${deniedVlanDhcpAccess}
-          ${routerDenyAccess}
+          ${deniedVlanDhcpv6Access}
           ${routerAccess}
 
           iifname "${wanIface}" ct state { established, related } accept comment "Allow established traffic"
@@ -177,10 +192,12 @@ in
 
           iifname "${wanIface}" counter drop comment "Drop all other unsolicited traffic from WAN"
 
-          iif lo accept comment "Allow all loopback traffic"
-
           iifname "${lanIface}" ip6 nexthdr icmpv6 icmpv6 type { nd-router-solicit, nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert } counter accept comment "Allow SLAAC and DHCPv6"
           ${routerIpv6IcmpAccess}
+
+          ${routerDenyAccess}
+
+          iif lo accept comment "Allow all loopback traffic"
         }
 
         chain forward {
