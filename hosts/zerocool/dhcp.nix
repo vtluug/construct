@@ -7,6 +7,7 @@
 let
   hosts = import ./static-hosts.nix;
   dnsmasqHosts = builtins.map (host: "${host.mac},${host.ipv4},${host.name}") hosts;
+  globalDomain = "mcb.vtluug.org";
 
   taggedVlans = (
     builtins.filter (e: !builtins.hasAttr "untagged" e.snd) (
@@ -27,6 +28,11 @@ in
   services.dnsmasq = {
     enable = true;
     settings = {
+      domain =
+        (lib.lists.optional (builtins.hasAttr "domain" untaggedVlan) "${untaggedVlan.domain}.${globalDomain},${untaggedVlan.ipv4.address}/${toString untaggedVlan.ipv4.cidr}")
+        ++ (builtins.map (e: "${e.snd.domain}.${globalDomain},${e.snd.ipv4.address}/${toString e.snd.ipv4.cidr}") (
+          builtins.filter (e: builtins.hasAttr "domain" e.snd) taggedVlans
+        ));
       interface =
         (lib.lists.optional (
           (builtins.hasAttr "dhcpv4" untaggedVlan) || (builtins.hasAttr "dhcpv6" untaggedVlan)

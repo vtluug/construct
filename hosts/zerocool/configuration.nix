@@ -40,6 +40,7 @@ let
         cidr = 64;
       };
       allowRouterAccess = true;
+      domain = "mgmt";
       dhcpv4 = "10.98.4.128,10.98.4.254,12h";
       dhcpv6 = "ra-stateless,ra-names,12h";
     };
@@ -55,6 +56,7 @@ let
       };
       allowRouterAccess = true;
       untagged = true;
+      domain = "internal";
       dhcpv4 = "10.98.5.128,10.98.5.254,12h";
       dhcpv6 = "ra-stateless,ra-names,12h";
     };
@@ -69,6 +71,7 @@ let
         cidr = 64;
       };
       allowRouterAccess = true;
+      domain = "g";
       dhcpv4 = "10.98.6.128,10.98.6.254,12h";
       dhcpv6 = "ra-stateless,ra-names,12h";
     };
@@ -83,6 +86,7 @@ let
         cidr = 64;
       };
       allowRouterAccess = false;
+      domain = "colo";
       dhcpv4 = "10.98.7.128,10.98.7.254,12h";
       dhcpv6 = "ra-stateless,ra-names,12h";
     };
