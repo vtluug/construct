@@ -146,8 +146,8 @@ in
 
           ${routerForward}
 
-          iifname { "${lanIface}" } oifname { "${wgIface}" } accept comment "Allow LAN to Tailscale"
-          iifname { "${wgIface}" } oifname { "${lanIface}" } accept comment "Allow tailscale back to LANs"
+          iifname { "${lanIface}" } oifname { "${wgIface}" } accept comment "Allow LAN to wireguard"
+          iifname { "${wgIface}" } oifname { "${lanIface}" } accept comment "Allow wireguard back to LANs"
 
           iifname "${lanIface}" ip6 nexthdr icmpv6 icmpv6 type { nd-router-solicit, nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert } accept comment "Allow essential ND in FORWARD"
           ${routerIpv6NdForward}
