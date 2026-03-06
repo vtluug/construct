@@ -25,6 +25,8 @@ let
   );
 in
 {
+  # DNS, DHCPv4, DHCPv6
+  networking.firewall.allowedUDPPorts = [ 53 67 547 ];
   services.dnsmasq = {
     enable = true;
     settings = {
