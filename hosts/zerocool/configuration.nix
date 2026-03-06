@@ -131,7 +131,6 @@ in
     ../common/users-local.nix
     ../common/tz-locale.nix
 
-    ./dns.nix
     ./router.nix
     (import ./lan.nix {
       inherit lib lanIface lan;

@@ -16,8 +16,11 @@
           publicKey = "gEk7+YfwkxM89v+nqlGZTcaxMlhAN5vCCE8U+w+Vy2g=";
           endpoint = "128.173.88.191:51820";
           allowedIPs = [
-            "10.98.255.1/32" # wg fabric
-            "10.98.0.0/22" # whit
+            # Wireguard fabric
+            "10.98.255.1/32"
+
+            # Whittemore
+            "10.98.0.0/22"
           ];
           persistentKeepalive = 25;
         }
