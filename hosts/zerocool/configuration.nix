@@ -15,7 +15,7 @@ let
     ipv6 = {
       gateway = "2001:468:c80:6119::1";
       address = "2001:468:c80:6119:82c1:6eff:fe21:2b88";
-      cidr = 60;
+      cidr = 64;
     };
     tcpPorts = [ 22 2222 ];
     udpPorts = [ 51820 ];
