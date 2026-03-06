@@ -111,13 +111,21 @@ let
 
   exposedIpv4Hosts = lib.strings.concatStringsSep "\n" (
     builtins.map (daddr: ''
-      iifname { "${wanIface}" } daddr ${daddr} accept comment "Expose ${daddr} to WAN"
+      iifname { "${wanIface}" } ip daddr ${daddr} accept comment "Expose ${daddr} to WAN"
+      oifname { "${wanIface}" } ip saddr ${daddr} accept comment "Expose ${daddr} to WAN"
+
     '') wan.exposeIpv4Hosts
   );
 
+  exposedIpv4HostsNatDisable = lib.strings.concatStringsSep "," (
+    builtins.map (toString) wan.exposeIpv4Hosts
+  );
+
+
   exposedIpv6Hosts = lib.strings.concatStringsSep "\n" (
     builtins.map (daddr: ''
-      iifname { "${wanIface}" } daddr ${daddr} accept comment "Expose ${daddr} to WAN"
+      iifname { "${wanIface}" } ip6 daddr ${daddr} accept comment "Expose ${daddr} to WAN"
+      oifname { "${wanIface}" } ip6 saddr ${daddr} accept comment "Expose ${daddr} to WAN"
     '') wan.exposeIpv6Hosts
   );
 in
@@ -153,6 +161,8 @@ in
         chain forward {
           type filter hook forward priority 0; policy drop;
 
+          ${exposedIpv4Hosts}
+
           ${interVlanRoutingBlock}
           ${untaggedInterVlanBlock}
 
@@ -162,15 +172,13 @@ in
           iifname { "${wgIface}" } oifname { "${lanIface}" } accept comment "Allow wireguard back to LANs"
 
           ${routerForward}
-
-          ${exposedIpv4Hosts}
         }
       }
 
       table ip nat {
         chain postrouting {
           type nat hook postrouting priority 100; policy accept;
-          oifname "${wanIface}" masquerade comment "NAT IPv4 traffic to WAN"
+          oifname "${wanIface}" ip saddr != { ${exposedIpv4HostsNatDisable} } masquerade comment "NAT IPv4 traffic to WAN"
         }
       }
 
@@ -203,6 +211,8 @@ in
         chain forward {
           type filter hook forward priority 0; policy drop;
 
+          ${exposedIpv6Hosts}
+
           ${interVlanRoutingBlock}
           ${untaggedInterVlanBlock}
 
@@ -215,8 +225,6 @@ in
 
           iifname "${lanIface}" ip6 nexthdr icmpv6 icmpv6 type { nd-router-solicit, nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert } accept comment "Allow essential ND in FORWARD"
           ${routerIpv6NdForward}
-
-          ${exposedIpv6Hosts}
         }
       }
     '';

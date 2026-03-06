@@ -45,6 +45,13 @@ in
               prefixLength = e.snd.ipv6.cidr;
             }
           ];
+          ipv4.routes = lib.optionals (builtins.hasAttr "publicHosts" e.snd.ipv4) (
+            builtins.map (host: {
+              address = host;
+              prefixLength = 32;
+            }) e.snd.ipv4.publicHosts
+          );
+          proxyARP = builtins.hasAttr "publicHosts" e.snd.ipv4;
         };
       })
       (
@@ -71,6 +78,13 @@ in
               prefixLength = untaggedVlan.ipv6.cidr;
             }
           ];
+          ipv4.routes = lib.optionals (builtins.hasAttr "publicHosts" untaggedVlan.ipv4) (
+            builtins.map (host: {
+              address = host;
+              prefixLength = 32;
+            }) untaggedVlan.ipv4.publicHosts
+          );
+          proxyARP = builtins.hasAttr "publicHosts" untaggedVlan.ipv4;
         };
       }
     ]

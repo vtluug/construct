@@ -20,9 +20,15 @@ let
     tcpPorts = [ 22 2222 ];
     udpPorts = [ 51820 ];
     # Publicly routable IPv4 addresses only
-    exposeIpv4Hosts = [];
+    exposeIpv4Hosts = [
+      "198.82.185.171"
+      "198.82.185.174"
+    ];
     # Publicly routable IPv6 addresses only
-    exposeIpv6Hosts = [];
+    exposeIpv6Hosts = [
+      "2607:b400:6:ce82:0:aff:fe62:f"
+      "2607:b400:6:ce83:225:90ff:fe9b:ed30"
+    ];
   };
 
   wgIface = "wg0";
@@ -65,6 +71,10 @@ let
       ipv4 = {
         address = "10.98.6.1";
         cidr = 24;
+        # IPv4 hosts for ARP proxy
+        publicHosts = [
+          "198.82.185.171"
+        ];
       };
       ipv6 = {
         address = "2607:b400:6:ce82::1";
@@ -80,6 +90,10 @@ let
       ipv4 = {
         address = "10.98.7.1";
         cidr = 24;
+        # IPv4 hosts for ARP proxy
+        publicHosts = [
+          "198.82.185.174"
+        ];
       };
       ipv6 = {
         address = "2607:b400:6:ce83::1";
