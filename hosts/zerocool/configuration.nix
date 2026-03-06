@@ -148,6 +148,16 @@ in
     })
   ];
 
+  environment.systemPackages = with pkgs; [
+    neovim
+    helix
+    mtr
+    dig
+    tcpdump
+    ndisc6
+    inetutils
+  ];
+
   networking.hostName = "zerocool";
   system.stateVersion = "25.05";
 }
