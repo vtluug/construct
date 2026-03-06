@@ -18,8 +18,8 @@
       ];
       ipv6.addresses = [
         {
-      	  address = wan.ipv6.address;
-      	  prefixLength = wan.ipv6.cidr;
+          address = wan.ipv6.address;
+          prefixLength = wan.ipv6.cidr;
         }
       ];
     };

@@ -17,16 +17,23 @@ let
       address = "2001:468:c80:6119:82c1:6eff:fe21:2b88";
       cidr = 64;
     };
-    tcpPorts = [ 22 2222 ];
+    tcpPorts = [
+      22
+      2222
+    ];
     udpPorts = [ 51820 ];
     # Publicly routable IPv4 addresses only
     exposeIpv4Hosts = [
+      # Scaryterry
       "198.82.185.171"
+      # Alex's box
       "198.82.185.174"
     ];
     # Publicly routable IPv6 addresses only
     exposeIpv6Hosts = [
+      # Scaryterry
       "2607:b400:6:ce82:0:aff:fe62:f"
+      # Alex's box
       "2607:b400:6:ce83:225:90ff:fe9b:ed30"
     ];
   };
@@ -73,6 +80,7 @@ let
         cidr = 24;
         # IPv4 hosts for ARP proxy
         publicHosts = [
+          # Scaryterry
           "198.82.185.171"
         ];
       };
@@ -92,6 +100,7 @@ let
         cidr = 24;
         # IPv4 hosts for ARP proxy
         publicHosts = [
+          # Alex's box
           "198.82.185.174"
         ];
       };

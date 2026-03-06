@@ -56,7 +56,6 @@ let
     builtins.map (daddr: ''
       iifname { "${wanIface}" } ip daddr ${daddr} accept comment "Expose ${daddr} to WAN"
       oifname { "${wanIface}" } ip saddr ${daddr} accept comment "Expose ${daddr} to WAN"
-
     '') wan.exposeIpv4Hosts
   );
 
@@ -146,10 +145,6 @@ in
           iifname "${wanIface}" counter drop comment "Drop all other unsolicited traffic from WAN"
 
           iif lo accept comment "Allow all loopback traffic"
-        }
-
-        chain output {
-          type filter hook output priority 0; policy accept;
         }
 
         chain forward {

@@ -11,10 +11,11 @@
       allowedIPsAsRoutes = true;
 
       peers = [
-        { # shellshock
+        {
+          # shellshock
           publicKey = "gEk7+YfwkxM89v+nqlGZTcaxMlhAN5vCCE8U+w+Vy2g=";
           endpoint = "128.173.88.191:51820";
-          allowedIPs = [ 
+          allowedIPs = [
             "10.98.255.1/32" # wg fabric
             "10.98.0.0/22" # whit
           ];
