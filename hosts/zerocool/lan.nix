@@ -51,6 +51,7 @@ in
               prefixLength = 32;
             }) e.snd.ipv4.publicHosts
           );
+          proxyARP = (builtins.hasAttr "publicHosts" e.snd.ipv4) && (builtins.length e.snd.ipv4.publicHosts > 0);
         };
       })
       (
@@ -83,6 +84,8 @@ in
               prefixLength = 32;
             }) untaggedVlan.ipv4.publicHosts
           );
+          proxyARP = (builtins.hasAttr "publicHosts" untaggedVlan.ipv4) && (builtins.length untaggedVlan.ipv4.publicHosts > 0);
+
         };
       }
     ]
