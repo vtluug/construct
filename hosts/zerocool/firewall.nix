@@ -8,6 +8,10 @@
   ...
 }:
 let
+  untaggedVlan = lib.lists.findFirst (
+    e: builtins.hasAttr "untagged" e
+  ) (throw "Must have untagged VLAN") (builtins.attrValues lan);
+
   taggedVlans = (
     builtins.filter (e: !builtins.hasAttr "untagged" e.snd) (
       lib.lists.zipLists (builtins.attrNames lan) (builtins.attrValues lan)
@@ -18,12 +22,38 @@ let
     builtins.map (
       e: ''iifname { "vlan${e.fst}" } accept comment "Allow vlan${e.fst} to access the router"''
     ) (builtins.filter (e: e.snd.allowRouterAccess) taggedVlans)
+    ++ (lib.lists.optional (untaggedVlan.allowRouterAccess) ''iifname { "${lanIface}" } accept comment "Allow ${lanIface} to access the router"'')
   );
 
   routerDenyAccess = lib.strings.concatStringsSep "\n" (
     builtins.map (
       e: ''iifname { "vlan${e.fst}" } drop comment "Deny vlan${e.fst} to access the router"''
     ) (builtins.filter (e: !e.snd.allowRouterAccess) taggedVlans)
+    ++ (lib.lists.optional (
+      !untaggedVlan.allowRouterAccess
+    ) ''iifname { "${lanIface}" } drop comment "Deny ${lanIface} to access the router"'')
+  );
+
+  isolateVlans = lib.strings.concatStringsSep "\n" (
+    builtins.map (e: ''
+      iifname { "vlan${e.fst}" } oifname { "${lanIface}", "${wgIface}", "vlan*" } drop comment "Isolate vlan${e.fst} from luug network"
+      iifname { "${lanIface}", "${wgIface}", "vlan*" } oifname { "vlan${e.fst}" } drop comment "Allow luug network from vlan${e.fst}"
+    '') (builtins.filter (e: e.snd.isolate) taggedVlans)
+    ++ (lib.lists.optional (untaggedVlan.isolate) ''
+      iifname { "${lanIface}" } oifname { "${wgIface}", "vlan*" } drop comment "Isolate ${lanIface} from luug network"
+      iifname { "${wgIface}", "vlan*" } oifname { "${lanIface}" } drop comment "Isolate luug network from ${lanIface}"
+    '')
+  );
+
+  luugNetworkForward = lib.strings.concatStringsSep "\n" (
+    builtins.map (e: ''
+      iifname { "vlan${e.fst}" } oifname { "${lanIface}", "${wgIface}", "vlan*" } accept comment "Allow vlan${e.fst} to luug network"
+      iifname { "${lanIface}", "${wgIface}", "vlan*" } oifname { "vlan${e.fst}" } accept comment "Allow luug network to vlan${e.fst}"
+    '') (builtins.filter (e: !e.snd.isolate) taggedVlans)
+    ++ (lib.lists.optional (!untaggedVlan.isolate) ''
+      iifname { "${lanIface}" } oifname { "${wgIface}", "vlan*"} accept comment "Allow ${lanIface} to luug network"
+      iifname { "${wgIface}", "vlan*" } oifname { "${lanIface}" } accept comment "Allow luug network to ${lanIface}"
+    '')
   );
 
   deniedVlanDhcpv4Access = lib.strings.concatStringsSep "\n" (
@@ -31,6 +61,12 @@ let
       iifname { "vlan${e.fst}" } udp dport { 53, 67 } accept comment "Allow vlan${e.fst} DHCP and DNS access the router"
       iifname { "vlan${e.fst}" } tcp dport 53 accept comment "Allow vlan${e.fst} TCP DNS access the router"
     '') (builtins.filter (e: !e.snd.allowRouterAccess && (builtins.hasAttr "dhcpv4" e.snd)) taggedVlans)
+    ++ (lib.lists.optional (!untaggedVlan.allowRouterAccess && (builtins.hasAttr "dhcpv4" untaggedVlan))
+      ''
+        iifname { "${lanIface}" } udp dport { 53, 67 } accept comment "Allow ${lanIface} DHCP and DNS access the router"
+        iifname { "${lanIface}" } tcp dport 53 accept comment "Allow ${lanIface} TCP DNS access the router"
+      ''
+    )
   );
 
   deniedVlanDhcpv6Access = lib.strings.concatStringsSep "\n" (
@@ -38,6 +74,12 @@ let
       iifname { "vlan${e.fst}" } udp dport { 53, 547 } accept comment "Allow vlan${e.fst} DHCP and DNS access the router"
       iifname { "vlan${e.fst}" } tcp dport 53 accept comment "Allow vlan${e.fst} TCP DNS access the router"
     '') (builtins.filter (e: !e.snd.allowRouterAccess && (builtins.hasAttr "dhcpv6" e.snd)) taggedVlans)
+    ++ (lib.lists.optional (!untaggedVlan.allowRouterAccess && (builtins.hasAttr "dhcpv6" untaggedVlan))
+      ''
+        iifname { "${lanIface}" } udp dport { 53, 547 } accept comment "Allow ${lanIface} DHCP and DNS access the router"
+        iifname { "${lanIface}" } tcp dport 53 accept comment "Allow ${lanIface} TCP DNS access the router"
+      ''
+    )
   );
 
   exposedUdpPorts = lib.strings.concatStringsSep "\n" (
@@ -81,13 +123,12 @@ in
           type filter hook input priority 0; policy drop;
 
           ct state { established, related } accept comment "Allow all established traffic"
-          iifname { "${lanIface}" } accept comment "Allow local network to access the router"
           iifname { "${wgIface}" } accept comment "Allow wireguard to access the router"
+
+          iifname { "${wanIface}", "${lanIface}", "vlan*" } icmp type { echo-request, destination-unreachable, time-exceeded } counter accept comment "Allow select ICMP"
 
           ${routerAccess}
           ${deniedVlanDhcpv4Access}
-
-          iifname "${wanIface}" icmp type { echo-request, destination-unreachable, time-exceeded } counter accept comment "Allow select ICMP"
 
           ${exposedUdpPorts}
           ${exposedTcpPorts}
@@ -104,12 +145,8 @@ in
           ct state { established, related } accept comment "Allow all established traffic"
           iifname { "${lanIface}", "vlan*" } oifname { "${wanIface}" } accept comment "Allow all traffic going out"
 
-          iifname { "${lanIface}" } oifname { "${wgIface}" } accept comment "Allow LAN to wireguard"
-          iifname { "${wgIface}" } oifname { "${lanIface}" } accept comment "Allow wireguard back to LANs"
-
-          iifname "vlan*" oifname "vlan*" drop comment "Drop inter-VLAN traffic"
-          iifname "${lanIface}*" oifname "vlan*" drop comment "Drop LAN to VLAN traffic"
-          iifname "vlan*" oifname "${lanIface}*" drop comment "Drop VLAN to LAN traffic"
+          ${isolateVlans}
+          ${luugNetworkForward}
 
           ${exposedIpv4Hosts}
         }
@@ -127,16 +164,16 @@ in
           type filter hook input priority 0; policy drop;
 
           ct state { established, related } accept comment "Allow all established traffic"
-          iifname { "${lanIface}" } accept comment "Allow local network to access the router"
           iifname { "${wgIface}" } accept comment "Allow wireguard to access the router"
-          ${routerAccess}
-          ${deniedVlanDhcpv6Access}
 
           iifname { "${wanIface}", "${lanIface}", "vlan*" } icmpv6 type { 
             destination-unreachable, packet-too-big, time-exceeded, 
             parameter-problem, echo-request, echo-reply,
             nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert 
           } accept comment "Allow essential ICMPv6"
+
+          ${routerAccess}
+          ${deniedVlanDhcpv6Access}
 
           ${exposedUdpPorts}
           ${exposedTcpPorts}
@@ -153,12 +190,8 @@ in
           ct state { established, related } accept comment "Allow all established traffic"
           iifname { "${lanIface}", "vlan*" } oifname { "${wanIface}" } accept comment "Allow all traffic going out"
 
-          iifname { "${lanIface}" } oifname { "${wgIface}" } accept comment "Allow LAN to wireguard"
-          iifname { "${wgIface}" } oifname { "${lanIface}" } accept comment "Allow wireguard back to LANs"
-
-          iifname "vlan*" oifname "vlan*" drop comment "Drop inter-VLAN traffic"
-          iifname "${lanIface}*" oifname "vlan*" drop comment "Drop LAN to VLAN traffic"
-          iifname "vlan*" oifname "${lanIface}*" drop comment "Drop VLAN to LAN traffic"
+          ${isolateVlans}
+          ${luugNetworkForward}
 
           ${exposedIpv6Hosts}
         }

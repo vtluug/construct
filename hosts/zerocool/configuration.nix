@@ -52,6 +52,7 @@ let
         address = "2607:b400:6:ce80::1";
         cidr = 64;
       };
+      isolate = true;
       allowRouterAccess = true;
       domain = "mgmt";
       dhcpv4 = "10.98.4.128,10.98.4.254,12h";
@@ -67,6 +68,7 @@ let
         address = "2607:b400:6:ce81::1";
         cidr = 64;
       };
+      isolate = false;
       allowRouterAccess = true;
       untagged = true;
       domain = "internal";
@@ -88,6 +90,7 @@ let
         address = "2607:b400:6:ce82::1";
         cidr = 64;
       };
+      isolate = false;
       allowRouterAccess = true;
       domain = "g";
       dhcpv4 = "10.98.6.128,10.98.6.254,12h";
@@ -108,6 +111,7 @@ let
         address = "2607:b400:6:ce83::1";
         cidr = 64;
       };
+      isolate = true;
       allowRouterAccess = false;
       domain = "colo";
       dhcpv4 = "10.98.7.128,10.98.7.254,12h";

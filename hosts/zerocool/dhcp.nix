@@ -46,12 +46,12 @@ in
           e: "${e.snd.domain}.${globalDomain},${e.snd.ipv4.address}/${toString e.snd.ipv4.cidr}"
         ) (builtins.filter (e: builtins.hasAttr "domain" e.snd) taggedVlans));
       server = [
-          "9.9.9.9"
-          "2620:fe::fe"
-          "1.1.1.1"
-          "2606:4700:4700::1111"
-          "/whit.vtluug.org/10.98.3.2"
-          "/bastille.vtluug.org/10.98.3.2"
+        "9.9.9.9"
+        "2620:fe::fe"
+        "1.1.1.1"
+        "2606:4700:4700::1111"
+        "/whit.vtluug.org/10.98.3.2"
+        "/bastille.vtluug.org/10.98.3.2"
       ];
       interface =
         (lib.lists.optional (
