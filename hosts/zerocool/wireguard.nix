@@ -1,8 +1,8 @@
-{ config, wg_iface }:
+{ config, wgIface }:
 {
   age.secrets."wg.priv".file = ../../secrets/zerocool/wg.priv.age;
   networking.wireguard.interfaces = {
-    "${wg_iface}" = {
+    "${wgIface}" = {
       ips = [ "10.98.255.2/32" ];
       listenPort = 51820;
 
@@ -11,12 +11,16 @@
       allowedIPsAsRoutes = true;
 
       peers = [
-        { # shellshock
+        {
+          # shellshock
           publicKey = "gEk7+YfwkxM89v+nqlGZTcaxMlhAN5vCCE8U+w+Vy2g=";
           endpoint = "128.173.88.191:51820";
-          allowedIPs = [ 
-            "10.98.255.1/32" # wg fabric
-            "10.98.0.0/22" # whit
+          allowedIPs = [
+            # Wireguard fabric
+            "10.98.255.1/32"
+
+            # Whittemore
+            "10.98.0.0/22"
           ];
           persistentKeepalive = 25;
         }
