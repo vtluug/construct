@@ -55,8 +55,9 @@
 
         NIX_SSHOPTS="-o ForwardAgent=yes -J acidburn.vtluug.org" \
         ${pkgs.nixos-rebuild}/bin/nixos-rebuild switch \
-          --fast --flake ".#$TARGET_HOST_NAME" \
-          --use-remote-sudo \
+          --flake ".#$TARGET_HOST_NAME" \
+          --no-reexec \
+          --sudo \
           --target-host "papatux@$TARGET_HOST_ADDRESS" \
           --build-host "papatux@$TARGET_HOST_ADDRESS"
       '';
