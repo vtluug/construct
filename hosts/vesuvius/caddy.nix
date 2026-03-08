@@ -23,6 +23,14 @@ in
         hostPath = "/var/lib/caddy";
         isReadOnly = false;
       };
+      "/files" = {
+        hostPath = "/nfs/cistern/files";
+        isReadOnly = true;
+      };
+      "/users" = {
+        hostPath = "/nfs/cistern/home";
+        isReadOnly = true;
+      };
     };
     config =
       {
@@ -57,6 +65,79 @@ in
             reverse_proxy https://svc.bastille.vtluug.org:443 {
               transport http {
                 tls_insecure_skip_verify
+              }
+            }
+          '';
+          virtualHosts."vtluug.org".extraConfig = ''
+            # Static files (including user homedirs) {{{
+
+            # We got a C&D
+            handle_path /files/2013/hamexam/* {
+              file_server browse
+              root * /files/2013/hamexam
+              @denied not remote_ip 127.0.0.1 ::1 10.0.0.0/8 198.82.0.0/16 128.173.0.0/16 2607:b400::/32 2001:468:c80::/48
+              respond @denied 403
+            }
+
+            redir /files /files/ 308
+            handle_path /files/* {
+              file_server browse
+              root * /files
+            }
+
+            @usertilde path_regexp usertilde ^/users/~(.+?)(/.*)?$
+            redir @usertilde /~{re.usertilde.1}{re.usertilde.2} permanent
+
+            @tildedir path_regexp tildedir ^/~([^/]+)$
+            redir @tildedir /~{re.tildedir.1}/ 308
+
+            @userdir path_regexp userdir ^/~([^/]+)(/.*)?$
+            handle @userdir {
+              root * /users/{re.userdir.1}/public_html
+              rewrite * {re.userdir.2}
+              file_server browse
+            }
+            # }}}
+
+            # LUUG wiki stuff (slightly different vs gobblerpedia) {{{
+            # Proxy to internal instance
+            handle_path /w/* {
+              reverse_proxy https://svc.bastille.vtluug.org:443 {
+                transport http {
+                  tls_insecure_skip_verify
+                }
+              }
+            }
+
+            # Displayed path is /wiki, but actual path is /w
+            # See $wgScriptPath & $wgArticle path in MW config
+            handle_path /wiki/* {
+              rewrite * /w/index.php{uri}
+              reverse_proxy https://svc.bastille.vtluug.org:443 {
+                transport http {
+                  tls_insecure_skip_verify
+                }
+              }
+            }
+            handle /wiki {
+              rewrite * /w/index.php
+              reverse_proxy https://svc.bastille.vtluug.org:443 {
+                transport http {
+                  tls_insecure_skip_verify
+                }
+              }
+            }
+
+            # Deny access to mediawiki cache (shouldn't be enabled anyways)
+            respond /w/cache/* 403
+            # }}}
+
+            # Main site
+            handle {
+              reverse_proxy https://svc.bastille.vtluug.org:443 {
+                transport http {
+                  tls_insecure_skip_verify
+                }
               }
             }
           '';
