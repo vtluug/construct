@@ -1,0 +1,458 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wiki-images-nfs-pvc
+  labels:
+    app: wiki
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: forge-nfs-csi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wiki-db-nfs-pvc
+  labels:
+    app: wiki
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: forge-nfs-csi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wiki-db-deployment
+  labels:
+    app: wiki-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wiki-db
+  template:
+    metadata:
+      labels:
+        app: wiki-db
+    spec:
+      volumes:
+        - name: wiki-db-data
+          persistentVolumeClaim:
+            claimName: wiki-db-nfs-pvc
+      containers:
+      - name: mariadb
+        image: mariadb:latest
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_DATABASE
+          value: "mw"
+        - name: MYSQL_USER
+          value: "mw_user"
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wiki-secrets
+              key: mysql_password
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wiki-secrets
+              key: mysql_root_password
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 1
+          limits:
+            memory: 1Gi
+            cpu: 1
+        volumeMounts:
+          - name: wiki-db-data
+            mountPath: /var/lib/mysql
+            readOnly: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wiki-db-service
+spec:
+  selector:
+    app: wiki-db
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: 3306
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wiki-deployment
+  labels:
+    app: wiki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wiki
+  template:
+    metadata:
+      labels:
+        app: wiki
+    spec:
+      volumes:
+        - name: wiki-images
+          persistentVolumeClaim:
+            claimName: wiki-images-nfs-pvc
+        - name: wiki-localsettings
+          configMap:
+            name: wiki-config
+        - name: wiki-localsettings-vtluug
+          configMap:
+            name: wiki-config-vtluug
+        - name: wiki-localsettings-gobblerpedia
+          configMap:
+            name: wiki-config-gobblerpedia
+      containers:
+      - name: mediawiki
+        image: vtluug/mediawiki-vtluug:1.1
+        command: ['/bin/sh', '-c', 'sleep 7 && php /var/www/html/w/maintenance/update.php --quick ; apache2-foreground']
+        ports:
+        - containerPort: 80
+        env:
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wiki-secrets
+              key: mysql_password
+        - name: MW_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: wiki-secrets
+              key: mw_secret_key
+        - name: MW_UPGRADE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: wiki-secrets
+              key: mw_upgrade_key
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wiki-secrets
+              key: smtp_password
+        - name: ODIC_GOOGLE_ID
+          valueFrom:
+            secretKeyRef:
+              name: wiki-secrets
+              key: odic_google_id
+        - name: ODIC_GOOGLE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: wiki-secrets
+              key: odic_google_secret
+        - name: DEX_WIKI_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: wiki-secrets
+              key: dex_wiki_secret
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: 2
+          limits:
+            memory: 2Gi
+            cpu: 2
+        volumeMounts:
+          - name: wiki-images
+            mountPath: /var/www/html/w/images
+            readOnly: false
+          - name: wiki-localsettings
+            mountPath: /var/www/html/w/LocalSettings.php
+            subPath: LocalSettings.php
+            readOnly: true
+          - name: wiki-localsettings-vtluug
+            mountPath: /var/www/html/w/LocalSettings_vtluug.php
+            subPath: LocalSettings_vtluug.php
+            readOnly: true
+          - name: wiki-localsettings-gobblerpedia
+            mountPath: /var/www/html/w/LocalSettings_gobblerpedia.php
+            subPath: LocalSettings_gobblerpedia.php
+            readOnly: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wiki-service
+spec:
+  selector:
+    app: wiki
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wiki-ingress
+spec:
+  rules:
+  - host: "vtluug.org"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/w"
+        backend:
+          service:
+            name: wiki-service
+            port:
+              number: 80
+  - host: "gobblerpedia.org"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: wiki-service
+            port:
+              number: 80
+  - host: "wiki.vtluug.org"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: wiki-service
+            port:
+              number: 80
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wiki-config
+data:
+  LocalSettings.php: |
+    <?php
+    # Protect against web entry
+    if (!defined('MEDIAWIKI')) {
+        exit;
+    }
+
+    $wgDisableOutputCompression = true;
+
+    # Database
+    $wgDBtype     = 'mysql';
+    $wgDBserver   = 'wiki-db-service';
+    $wgDBname     = 'mw';
+    $wgDBuser     = 'mw_user';
+    $wgDBpassword = getenv('MYSQL_PASSWORD');
+
+    $wgDBTableOptions = "ENGINE=InnoDB, DEFAULT CHARSET=binary";
+
+    # Wiki-specific settings
+    if (defined('MW_DB')) {
+        $wgDBprefix = MW_DB;
+    } elseif ($_SERVER['SERVER_NAME'] == 'gobblerpedia.org') {
+        $wgDBprefix = 'gobblerpedia';
+    } else {
+        $wgDBprefix = 'vtluug';
+    }
+
+    # Disable random account creation
+    $wgGroupPermissions['*']['edit']              = false;
+    $wgGroupPermissions['*']['createaccount']     = false;
+    $wgGroupPermissions['*']['autocreateaccount'] = true;
+
+    # Mail
+    $wgSMTP = array(
+     'host'     => 'acidburn.vtluug.org',
+     'IDHost'   => 'vtluug.org',
+     'port'     => 25,
+     'auth'     => true,
+     'username' => 'wiki-email',
+     'password' => getenv('SMTP_PASSWORD')
+    );
+
+    $wgEnableEmail         = true;
+    $wgEnableUserEmail     = true;
+    $wgEmergencyContact    = 'wiki-admin@vtluug.org';
+    $wgPasswordSender      = 'wiki-admin@vtluug.org';
+    $wgEnotifUserTalk      = false;
+    $wgEnotifWatchlist     = false;
+    $wgEmailAuthentication = true;
+
+    $wgScriptPath  = '/w';
+    $wgArticlePath = "/wiki/$1";
+    $wgUsePathInfo = true;
+
+    $wgResourceBasePath = $wgScriptPath;
+
+    $wgMainCacheType    = CACHE_NONE;
+    $wgMemCachedServers = [];
+
+    $wgEnableUploads             = true;
+    $wgUploadPath                = "{$wgScriptPath}/images";
+    $wgUploadDirectory           = "{$IP}/images/{$wgDBprefix}";
+    $wgUseImageMagick            = true;
+    $wgImageMagickConvertCommand = '/usr/bin/convert';
+    $wgFileExtensions[]          = 'svg';
+    $wgSVGConverter              = 'rsvg';
+
+    $wgUseInstantCommons = true;
+    $wgPingback = true;
+
+    $wgShellLocale = 'C.UTF-8';
+
+    $wgCacheDirectory = "{$IP}/cache/{$wgDBprefix}";
+
+    $wgLanguageCode = 'en';
+
+    $wgSecretKey  = getenv('MW_SECRET_KEY');
+    $wgUpgradeKey = getenv('MW_UPGRADE_KEY');
+
+    $wgAuthenticationTokenVersion = '1';
+
+    $wgNoFollowLinks = false;
+
+    $wgDiff3 = '/usr/bin/diff3';
+
+    # Extensions
+    wfLoadExtension('AbuseFilter');
+    $wgGroupPermissions['sysop']['abusefilter-modify']            = true;
+    $wgGroupPermissions['*']['abusefilter-log-detail']            = true;
+    $wgGroupPermissions['*']['abusefilter-view']                  = true;
+    $wgGroupPermissions['*']['abusefilter-log']                   = true;
+    $wgGroupPermissions['sysop']['abusefilter-private']           = true;
+    $wgGroupPermissions['sysop']['abusefilter-modify-restricted'] = true;
+    $wgGroupPermissions['sysop']['abusefilter-revert']            = true;
+    $wgAbuseFilterEmergencyDisableThreshold = array('default' => 1.00);
+
+    wfLoadExtension('AntiSpoof');
+
+    $wgUseAjax = true;
+    wfLoadExtension('CategoryTree');
+
+    wfLoadExtension('Cite');
+
+    wfLoadExtension('Interwiki');
+    $wgGroupPermissions['sysop']['interwiki'] = true;
+
+    wfLoadExtension('Maps');
+    require_once('extensions/Maps/Maps_Settings.php');
+    $GLOBALS['egMapsEnableCoordinateFunction'] = false;
+    $GLOBALS['egMapsDefaultService'] = 'leaflet';
+
+    wfLoadExtension('MobileFrontend');
+    $wgMFAutodetectMobileView = true;
+    wfLoadSkin('MinervaNeue');
+    $wgMFDefaultSkinClass = 'SkinMinerva';
+    wfLoadExtension('GeoData');
+    $wgMFNearby = true;
+
+    wfLoadExtension('Nuke');
+
+    wfLoadExtension('PluggableAuth');
+    wfLoadExtension('OpenIDConnect');
+    $wgPluggableAuth_EnableLocalLogin   = true;
+    $wgPluggableAuth_ButtonLabelMessage = 'VTLUUG SSO';
+    $wgOpenIDConnect_UseEmailNameAsUserName = true;
+    $wgOpenIDConnect_Config['https://id.vtluug.org'] = [
+        'clientID'           => 'vtluug-wiki',
+        'clientsecret'       => getenv('DEX_WIKI_SECRET'),
+        'name'               => 'VTLUUG SSO',
+        'scope'              => ['openid', 'profile', 'email'],
+        'preferred_username' => 'name'
+    ];
+
+    wfLoadExtension('ParserFunctions');
+    $wgPFEnableStringFunctions = true;
+
+    wfLoadExtension('Renameuser');
+
+    $wgGroupPermissions['sysop']['rollback'] = true;
+
+    wfLoadExtension('UserMerge');
+    $wgGroupPermissions['sysop']['usermerge'] = true;
+    $wgUserMergeProtectedGroups = array();
+
+    # Skins
+    wfLoadSkin('Vector');
+    $wgDefaultSkin = 'vector';
+
+    # Load wiki specific settings
+    require_once("LocalSettings_{$wgDBprefix}.php");
+
+    # Debugging
+    $wgDBerrorLog = 'php://stderr';
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wiki-config-vtluug
+data:
+  LocalSettings_vtluug.php: |
+    <?php
+    $wgSitename      = 'Linux and Unix Users Group at Virginia Teck Wiki';
+    $wgMetaNamespace = 'VTLUUG';
+
+    $wgServer = 'https://vtluug.org';
+
+    $wgLogo           = "{$wgUploadPath}/VTLUUG_Wiki.png";
+    $wgAppleTouchIcon = "{$wgUploadPath}/apple-icon.png";
+    $wgFavicon        = "{$wgUploadPath}/favicon.png";
+
+    $wgPluggableAuth_ButtonLabelMessage = 'VTLUUG/Google SSO';
+    $wgOpenIDConnect_Config['https://accounts.google.com'] = [
+        'clientID'     => getenv('ODIC_GOOGLE_ID'),
+        'clientsecret' => getenv('ODIC_GOOGLE_SECRET'),
+        'name'         => 'Google SSO',
+        'scope'        => ['openid', 'profile', 'email']
+    ];
+
+    $wgRightsPage = 'Linux_and_Unix_Users_Group_at_Virginia_Tech_Wiki:License';
+    $wgRightsUrl  = 'http://creativecommons.org/licenses/by-sa/3.0/us/';
+    $wgRightsText = 'Attribution-Share Alike 3.0 United States';
+    $wgRightsIcon = "{$wgUploadPath}/cc-by-sa.png";
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wiki-config-gobblerpedia
+data:
+  LocalSettings_gobblerpedia.php: |
+    <?php
+    $wgSitename = 'Gobblerpedia';
+    $wgMetaNamespace = 'Gobblerpedia';
+
+    $wgServer = 'https://gobblerpedia.org';
+
+    $wgLogo = "{$wgUploadPath}/gobblerpedia.png";
+    $wgFavicon = "{$wgUploadPath}/favicon.png";
+
+    $wgPluggableAuth_ButtonLabelMessage = 'VTLUUG/Google SSO';
+    $wgOpenIDConnect_Config['https://accounts.google.com'] = [
+        'clientID'     => getenv('ODIC_GOOGLE_ID'),
+        'clientsecret' => getenv('ODIC_GOOGLE_SECRET'),
+        'name'         => 'Google SSO',
+        'scope'        => ['openid', 'profile', 'email']
+    ];
+
+    wfLoadExtension('Scribunto');
+    $wgScribuntoDefaultEngine = 'luastandalone';
+
+    $wgRightsPage = '';
+    $wgRightsUrl = 'http://creativecommons.org/licenses/by-sa/3.0/us/';
+    $wgRightsText = 'Attribution-ShareAlike 3.0 United States';
+    $wgRightsIcon = "{$wgResourceBasePath}/images/cc-by-sa-88x31.png";

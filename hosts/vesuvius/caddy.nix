@@ -61,6 +61,51 @@ in
 
         services.caddy = {
           enable = true;
+          virtualHosts."wiki.vtluug.org".extraConfig = ''
+            # wiki.vtluug.org redirects to vtluug.org/wiki
+            @wikipath path_regexp wikipath ^/(wiki|w)/(.*)$
+            redir @wikipath https://vtluug.org/{re.wikipath.1}/{re.wikipath.2} permanent
+            redir * https://vtluug.org/wiki/Main_page permanent
+          '';
+          virtualHosts."gobblerpedia.org".extraConfig = ''
+            handle / {
+              redir * /wiki/Main_page permanent
+            }
+
+            handle_path /w/* {
+              reverse_proxy https://svc.bastille.vtluug.org:443 {
+                transport http {
+                  tls_insecure_skip_verify
+                }
+              }
+            }
+            handle /w {
+              reverse_proxy https://svc.bastille.vtluug.org:443 {
+                transport http {
+                  tls_insecure_skip_verify
+                }
+              }
+            }
+
+            handle_path /wiki/* {
+              rewrite * /w/index.php{uri}
+              reverse_proxy https://svc.bastille.vtluug.org:443 {
+                transport http {
+                  tls_insecure_skip_verify
+                }
+              }
+            }
+            handle /wiki {
+              rewrite * /w/index.php
+              reverse_proxy https://svc.bastille.vtluug.org:443 {
+                transport http {
+                  tls_insecure_skip_verify
+                }
+              }
+            }
+
+            respond /w/cache/* 403
+          '';
           virtualHosts."*.vtluug.org".extraConfig = ''
             reverse_proxy https://svc.bastille.vtluug.org:443 {
               transport http {
