@@ -47,6 +47,10 @@ spec:
         - name: wiki-db-data
           persistentVolumeClaim:
             claimName: wiki-db-nfs-pvc
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
       containers:
       - name: mariadb
         image: mariadb:latest
