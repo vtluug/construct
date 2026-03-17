@@ -306,7 +306,7 @@ data:
     $wgMemCachedServers = [];
 
     $wgEnableUploads             = true;
-    $wgUploadPath                = "{$wgScriptPath}/images";
+    $wgUploadPath                = "{$wgScriptPath}/images/{$wgDBprefix}";
     $wgUploadDirectory           = "{$IP}/images/{$wgDBprefix}";
     $wgUseImageMagick            = true;
     $wgImageMagickConvertCommand = '/usr/bin/convert';
