@@ -62,6 +62,9 @@ in
         services.caddy = {
           enable = true;
           virtualHosts."wiki.vtluug.org".extraConfig = ''
+            tls {
+              dns gandi {env.GANDI_AUTH_TOKEN}
+            }
             # wiki.vtluug.org redirects to vtluug.org/wiki
             @wikipath path_regexp wikipath ^/(wiki|w)/(.*)$
             redir @wikipath https://vtluug.org/{re.wikipath.1}/{re.wikipath.2} permanent
@@ -107,6 +110,9 @@ in
             respond /w/cache/* 403
           '';
           virtualHosts."*.vtluug.org".extraConfig = ''
+            tls {
+              dns gandi {env.GANDI_AUTH_TOKEN}
+            }
             reverse_proxy https://svc.bastille.vtluug.org:443 {
               transport http {
                 tls_insecure_skip_verify
@@ -114,6 +120,9 @@ in
             }
           '';
           virtualHosts."vtluug.org".extraConfig = ''
+            tls {
+              dns gandi {env.GANDI_AUTH_TOKEN}
+            }
             # Static files (including user homedirs) {{{
 
             # We got a C&D
@@ -191,7 +200,6 @@ in
             hash = "sha256-5mjD0CY7f5+sRtV1rXysj8PvId2gQaWiXlIaTg2Lv8A=";
           };
           globalConfig = ''
-            acme_dns gandi {env.GANDI_AUTH_TOKEN}
           '';
         };
         systemd.services.caddy.serviceConfig.EnvironmentFile = [ "${gandi-key-path}" ];
