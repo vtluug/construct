@@ -27,7 +27,7 @@ case "$ACTION" in
         ;;
     decrypt)
         [[ -f "${NAME}.enc.yaml" ]] || { echo "Error: ${NAME}.enc.yaml not found"; exit 1; }
-        sops --decrypt "${NAME}.enc.yaml" > "${NAME}.yaml"
+        (umask 077 && sops --decrypt "${NAME}.enc.yaml" > "${NAME}.yaml")
         echo "Decrypted ${NAME}.enc.yaml -> ${NAME}.yaml"
         ;;
     *)
