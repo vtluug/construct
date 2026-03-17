@@ -72,7 +72,7 @@ in
               redir * /wiki/Main_page permanent
             }
 
-            handle_path /w/* {
+            handle /w/* {
               reverse_proxy https://svc.bastille.vtluug.org:443 {
                 transport http {
                   tls_insecure_skip_verify
@@ -146,7 +146,7 @@ in
 
             # LUUG wiki stuff (slightly different vs gobblerpedia) {{{
             # Proxy to internal instance
-            handle_path /w/* {
+            handle /w/* {
               reverse_proxy https://svc.bastille.vtluug.org:443 {
                 transport http {
                   tls_insecure_skip_verify
