@@ -2,3 +2,4 @@
 
 kube-manifests/secrets/*.yaml
 !kube-manifests/secrets/*.enc.yaml
+!kube-manifests/secrets/.sops.yaml
