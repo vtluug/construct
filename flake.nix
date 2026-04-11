@@ -23,6 +23,13 @@
 
     flake = {
       nixosConfigurations = {
+        rowhammer = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            (import ./hosts/rowhammer/configuration.nix)
+            agenix.nixosModules.default
+          ];
+        };
         vesuvius = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
