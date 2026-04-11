@@ -21,6 +21,7 @@
 
             # Whittemore
             "10.98.0.0/22"
+            "2607:b400:6:cc80::/64"
           ];
           persistentKeepalive = 25;
         }
