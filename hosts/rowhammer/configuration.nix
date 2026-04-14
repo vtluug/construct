@@ -3,6 +3,7 @@
   imports =
     [
       ./hardware-configuration.nix
+      ./nvidia.nix
       ../common/nix.nix
       ../common/sshd.nix
       ../common/users-local.nix
