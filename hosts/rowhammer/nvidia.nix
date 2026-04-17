@@ -1,6 +1,7 @@
 { config, pkgs, ... }:
 {
   boot.kernelParams = [ "nvidia-drm.modeset=1" ];
+  boot.kernelModules = [ "nvidia_uvm" ];
   boot.initrd.kernelModules = [ "nvidia" ];
   boot.extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
 
@@ -29,4 +30,12 @@
     nvtopPackages.nvidia
     pciutils
   ];
+  environment.variables = {
+    CUDAPATH = "${pkgs.cudaPackages.cudatoolkit}";
+    LD_LIBRARY_PATH = [
+      "/run/opengl-driver/lib"
+      "${pkgs.linuxPackages.nvidia_x11}/lib"
+      "${pkgs.cudaPackages.cudatoolkit}/lib"
+    ];
+  };
 }
