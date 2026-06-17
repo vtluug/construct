@@ -2,6 +2,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ../common/kvm.nix
     ./nix.nix
     ./zfs.nix
     ./netboot.nix
