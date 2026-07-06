@@ -11,6 +11,16 @@
   networking.networkmanager.enable = true;
   networking.networkmanager.unmanaged = [ "interface-name:enp1s0f1" ];
 
+  # TODO: shit hack so cistern works. both routes below are wrong...
+  # i just want to stop spending time fixing whatever's wrong. TODO burn it all 
+  networking.interfaces.eno0.ipv4.routes = [
+    {
+      address = "10.98.0.7";
+      prefixLength = 32;
+      options = { src = "10.98.1.147"; };
+    }
+  ];
+
   networking.interfaces.enp1s0f1.ipv4.routes = [
     {
       address = "10.98.0.0";
