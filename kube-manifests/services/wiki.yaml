@@ -52,7 +52,7 @@ spec:
         runAsGroup: 999
       containers:
       - name: mariadb
-        image: mariadb:latest
+        image: mariadb:12.2.2
         ports:
         - containerPort: 3306
         env:
