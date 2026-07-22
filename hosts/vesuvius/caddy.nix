@@ -6,6 +6,7 @@
 }:
 let
   gandi-key-path = "/secrets/gandi.env";
+  cluster-router-ip = "10.98.0.192";
 in
 {
   age.secrets."gandi.env".file = ../../secrets/vesuvius/gandi.env.age;
@@ -54,10 +55,23 @@ in
               prefixLength = 64;
             }
           ];
+          ipv4.routes = [
+            {
+              address = "10.98.3.0";
+              prefixLength = 24;
+              via = cluster-router-ip;
+              # The route is installed before DHCP adds the private address.
+              options.onlink = "";
+            }
+          ];
         };
 
-        # Force container to get DNS settings from network
+        # use vesuvius for dns
         networking.useHostResolvConf = false;
+        networking.nameservers = [ "10.98.3.2" ];
+        networking.dhcpcd.extraConfig = ''
+          nooption domain_name_servers
+        '';
 
         services.caddy = {
           enable = true;
