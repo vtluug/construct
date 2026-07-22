@@ -28,6 +28,7 @@
           modules = [
             (import ./hosts/rowhammer/configuration.nix)
             agenix.nixosModules.default
+            (import ./hosts/common/build-info.nix { inherit self; })
           ];
         };
         vesuvius = nixpkgs.lib.nixosSystem {
@@ -35,6 +36,7 @@
           modules = [
             (import ./hosts/vesuvius/configuration.nix)
             agenix.nixosModules.default
+            (import ./hosts/common/build-info.nix { inherit self; })
           ];
         };
         zerocool = nixpkgs.lib.nixosSystem {
@@ -42,6 +44,7 @@
           modules = [
             (import ./hosts/zerocool/configuration.nix)
             agenix.nixosModules.default
+            (import ./hosts/common/build-info.nix { inherit self; })
           ];
         };
       };
