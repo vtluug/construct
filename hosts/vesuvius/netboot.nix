@@ -1,44 +1,54 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
-  dom_ip = "10.98.2.1";
+  dom_ip = "10.98.3.2";
+  vlan_router_ip = "10.98.3.1";
+  dns_server_ip = "10.98.0.1";
   dhcp_iface = "enp1s0f1";
-  client_range = "10.98.2.2,10.98.2.100";
+  client_range = "10.98.3.3,10.98.3.100";
 
-  sub_image = pkgs.nixos {
-    imports = [ "${pkgs.path}/nixos/modules/installer/netboot/netboot-minimal.nix" ];
+  netboot-hostnames = import ../bastille/blade-names.nix;
 
-    system.stateVersion = "25.05";
-    services.openssh = {
-      enable = true;
-      settings.PasswordAuthentication = true;
-      settings.KbdInteractiveAuthentication = false;
-    };
+  sub_image = lib.nixosSystem {
+    system = "x86_64-linux";
 
-    users.users.papatux = {
-      isNormalUser = true;
-      description = "papatux";
-      extraGroups = [ "networkmanager" "wheel" ];
-      hashedPassword = "$6$6GnvJWpo8oOWM1tb$GhuldW5iIdS6OuRyq5u1hSSu0VotQCLac7emA.Kui2hWLozR7EIO4Su6PCo5hTRG8iWnAOlGemQVyejIA9l4j/";
-      openssh.authorizedKeys.keys = import ../../papatux-keys.nix;
-    };
+    modules = [
+      ../bastille/blade.nix
+    ];
   };
-  
+
+  blade = sub_image.config.system.build;
+
   ipxe_config = pkgs.writeText "boot.ipxe" ''
     #!ipxe
-    kernel http://${dom_ip}:8080/netboot-nixtest/kernel init=/init boot.shell_on_fail
-    initrd http://${dom_ip}:8080/netboot-nixtest/initrd
+    kernel http://${dom_ip}:8080/netboot-kernel/bzImage init=${blade.toplevel}/init boot.shell_on_fail
+    initrd http://${dom_ip}:8080/netboot-initrd/initrd
 
     boot
   '';
 
   webroot = pkgs.linkFarm "netboot" [
-    { name = "netboot-nixtest"; path = sub_image.config.system.build.toplevel; }
-    { name = "boot.ipxe"; path = ipxe_config; }
+    {
+      name = "netboot-kernel";
+      path = blade.kernel;
+    }
+    {
+      name = "netboot-initrd";
+      path = blade.netbootRamdisk;
+    }
+    {
+      name = "boot.ipxe";
+      path = ipxe_config;
+    }
   ];
 
   # fyi this is cause tftpd in dnsmasq chroots and wouldn't follow external symlinks
   #  like the ones in a linkfarm
-  tftproot = pkgs.runCommand "tftproot-real" {} ''
+  tftproot = pkgs.runCommand "tftproot-real" { } ''
     mkdir -p $out
     cp ${ipxe_config} $out/boot.ipxe
     cp ${pkgs.ipxe}/ipxe.efi $out/ipxe.efi
@@ -54,27 +64,70 @@ in
 
   services.dnsmasq = {
     enable = true;
-    settings.enable-tftp = true;
-    settings.tftp-root = "${tftproot}";
-    settings.dhcp-range = "${client_range},12h";
-    settings.dhcp-option = [ "option:router,${dom_ip}" ];
-    settings.dhcp-userclass = [ "set:ipxe,iPXE" ];
-    settings.dhcp-boot = [
-      "tag:!ipxe,ipxe.efi"
-      "http://${dom_ip}:8080/boot.ipxe" 
-    ];
+    settings = {
+      domain = "bastille.vtluug.org";
+      domain-needed = true;
+      interface = "${dhcp_iface}";
+      bind-interfaces = true;
+      server = [
+        "198.82.247.98"
+        "198.82.247.66"
+        "198.82.247.34"
+        "2001:468:c80:6101:0:100:0:62"
+        "2001:468:c80:4101:0:100:0:42"
+        "2001:468:c80:2101:0:100:0:22"
+        "/whit.vtluug.org/10.98.0.1"
+      ];
+      enable-tftp = true;
+      tftp-root = "${tftproot}";
+      dhcp-range = "${client_range},12h";
+      dhcp-option = [ "option:router,${vlan_router_ip}" ];
+      dhcp-userclass = [ "set:ipxe,iPXE" ];
+      dhcp-boot = [
+        "tag:!ipxe,ipxe.efi"
+        "http://${dom_ip}:8080/boot.ipxe"
+      ];
+      # Set hostnames via DHCP
+      dhcp-host = builtins.map (host: "${host.fst},${host.snd}") (
+        lib.lists.filter (host: !lib.strings.hasInfix "unassigned" host.fst) (
+          lib.lists.zipLists (builtins.attrNames netboot-hostnames) (builtins.attrValues netboot-hostnames)
+        )
+      );
+      address = [
+        "/bastille.vtluug.org/::" # Filter IPv6 so it doesn't just hang forever when resolving every request to local domain
+        "/vesuvius.bastille.vtluug.org/${dom_ip}"
+        "/svc.bastille.vtluug.org/${dom_ip}"
+      ];
+      local = [
+        "/svc.bastille.vtluug.org/"
+      ];
+    };
   };
 
   services.nginx = {
     enable = true;
     virtualHosts."netboot" = {
-      listen = [{ port = 8080; addr = "0.0.0.0"; }];
+      listen = [
+        {
+          port = 8080;
+          addr = "0.0.0.0";
+        }
+      ];
       locations."/".root = "${webroot}";
     };
   };
 
   networking.firewall = {
-    allowedTCPPorts = [ 8080 ];
-    allowedUDPPorts = [ 67 69 ];
+    allowedTCPPorts = [
+      6443
+      8080
+      10250
+    ];
+    allowedUDPPorts = [
+      53
+      67
+      69
+      8472
+    ];
   };
 }

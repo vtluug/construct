@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+data:
+  my-custom.server: |
+    bastille.vtluug.org:53 {
+        forward . 10.98.3.2
+    }
+    whit.vtluug.org:53 {
+        forward . 10.98.0.1
+    }

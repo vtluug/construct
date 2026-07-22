@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ephemeral-chat-deployment
+  labels:
+    app: ephemeral-chat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ephemeral-chat
+  template:
+    metadata:
+      labels:
+        app: ephemeral-chat
+    spec:
+      containers:
+      - name: ephemeral
+        image: ghcr.io/mikhail729/ephemeral:0.2.2
+        ports:
+        - containerPort: 80
+        env:
+        - name: PORT
+          value: "80"
+        resources:
+          requests:
+            memory: 64Mi
+            cpu: 0.5
+          limits:
+            memory: 64Mi
+            cpu: 0.5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ephemeral-chat-service
+spec:
+  selector:
+    app: ephemeral-chat
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ephemeral-chat-ingress
+spec:
+  rules:
+  - host: "ephemeral.vtluug.org"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: ephemeral-chat-service
+            port:
+              number: 80

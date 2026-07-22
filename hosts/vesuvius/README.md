@@ -10,3 +10,13 @@ Giant storage server + future LHCPISCSIPXEIDK thing maybe?
 ## Storage
 We currently have one (manually created) RAID-Z2 pool mounted at `/forge` with `8` drives of `12 Tb` each.
 We have capacity for `48`(!) drives, but still only paper (and tape) caddies.
+
+```
+# for the nix store
+zfs create -o mountpoint=legacy \
+           -o compression=zstd \
+           -o xattr=sa \
+           -o acltype=posixacl \
+           -o atime=off \
+           forge/nix
+```
