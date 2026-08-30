@@ -11,6 +11,11 @@
   networking.networkmanager.enable = true;
   networking.networkmanager.unmanaged = [ "interface-name:enp1s0f1" ];
 
+  # so k3s sets this itself when it initializes, but
+  #  nix then (sometimes) overwrites it on rebuild. so
+  #  here we set it explicitly
+  boot.kernel.sysctl."net.ipv4.conf.all.forwarding" = 1;
+
   # TODO: shit hack so cistern works. both routes below are wrong...
   # i just want to stop spending time fixing whatever's wrong. TODO burn it all 
   networking.interfaces.eno0.ipv4.routes = [
