@@ -15,6 +15,16 @@
     flake-parts,
     agenix,
   }:
+  let
+    hostsDir = ./hosts;
+    hostNames = builtins.attrNames (
+      nixpkgs.lib.filterAttrs (
+        name: type:
+          type == "directory"
+          && builtins.pathExists (hostsDir + "/${name}/configuration.nix")
+      ) (builtins.readDir hostsDir)
+    );
+  in
   flake-parts.lib.mkFlake {inherit inputs;} {
     systems = [
       "aarch64-darwin"
@@ -22,22 +32,16 @@
     ];
 
     flake = {
-      nixosConfigurations = {
-        vesuvius = nixpkgs.lib.nixosSystem {
+      nixosConfigurations = nixpkgs.lib.genAttrs hostNames (
+        name:
+        nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            (import ./hosts/vesuvius/configuration.nix)
+            (hostsDir + "/${name}/configuration.nix")
             agenix.nixosModules.default
           ];
-        };
-        zerocool = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            (import ./hosts/zerocool/configuration.nix)
-            agenix.nixosModules.default
-          ];
-        };
-      };
+        }
+      );
     };
 
     perSystem = {
