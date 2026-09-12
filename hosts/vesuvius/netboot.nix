@@ -5,7 +5,7 @@
   ...
 }:
 let
-  dom_ip = "10.98.3.2";
+  dom_ip = "10.98.0.23";
   tftp_iface = "enp1s0f1";
 
   netboot-hostnames = import ../bastille/blade-names.nix;
