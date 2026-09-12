@@ -1,7 +1,12 @@
 { modulesPath, pkgs, lib, ... }: {
   imports = [
     ./eno1-imm-disable.nix
-    (import ../common/k3s.nix { inherit lib; })
+    ./network.nix
+    (import ../common/k3s.nix {
+      inherit lib;
+      serverAddr = "10.98.3.1";
+      flannelIface = "bond0";
+    })
     ../common/nix.nix
     ../common/sshd.nix
     ../common/users-local.nix
