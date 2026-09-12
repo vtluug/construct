@@ -14,7 +14,7 @@ in
   containers.caddy-proxy = {
     autoStart = true;
     ephemeral = true;
-    macvlans = [ "eno0" ];
+    macvlans = [ "eno0" "ens865" ];
     privateNetwork = false;
     bindMounts = {
       "${gandi-key-path}" = {
@@ -41,27 +41,39 @@ in
         ...
       }:
       {
-        networking.interfaces.mv-eno0 = {
-          useDHCP = true;
-          ipv4.addresses = [
-            {
-              address = "128.173.89.163";
-              prefixLength = 24;
-            }
-          ];
-          ipv6.addresses = [
-            {
-              address = "2607:b400:6:cc80:0:aff:fe62:f";
-              prefixLength = 64;
-            }
-          ];
-        };
+        networking = {
+          interfaces.mv-eno0 = {
+            useDHCP = true;
+            ipv4.addresses = [
+              {
+                address = "128.173.89.163";
+                prefixLength = 24;
+              }
+            ];
+            ipv6.addresses = [
+              {
+                address = "2607:b400:6:cc80:0:aff:fe62:f";
+                prefixLength = 64;
+              }
+            ];
+          };
 
-        networking.useHostResolvConf = false;
-        networking.nameservers = [ "10.98.0.1" ];
-        networking.dhcpcd.extraConfig = ''
-          nooption domain_name_servers
-        '';
+          interfaces.mv-ens865  = {
+            useDHCP = false;
+            ipv4.addresses = [
+              {
+                address = "10.98.3.254";
+                prefixLength = 24;
+              }
+            ];
+          };
+
+          useHostResolvConf = false;
+          nameservers = [ "10.98.0.1" ];
+          dhcpcd.extraConfig = ''
+            nooption domain_name_servers
+          '';
+        };
 
         services.caddy = {
           enable = true;
@@ -80,14 +92,14 @@ in
             }
 
             handle /w/* {
-              reverse_proxy https://svc.bastille.vtluug.org:443 {
+              reverse_proxy https://10.98.3.1:443 {
                 transport http {
                   tls_insecure_skip_verify
                 }
               }
             }
             handle /w {
-              reverse_proxy https://svc.bastille.vtluug.org:443 {
+              reverse_proxy https://10.98.3.1:443 {
                 transport http {
                   tls_insecure_skip_verify
                 }
@@ -96,7 +108,7 @@ in
 
             handle_path /wiki/* {
               rewrite * /w/index.php{uri}
-              reverse_proxy https://svc.bastille.vtluug.org:443 {
+              reverse_proxy https://10.98.3.1:443 {
                 transport http {
                   tls_insecure_skip_verify
                 }
@@ -104,7 +116,7 @@ in
             }
             handle /wiki {
               rewrite * /w/index.php
-              reverse_proxy https://svc.bastille.vtluug.org:443 {
+              reverse_proxy https://10.98.3.1:443 {
                 transport http {
                   tls_insecure_skip_verify
                 }
@@ -117,7 +129,7 @@ in
             tls {
               dns gandi {env.GANDI_AUTH_TOKEN}
             }
-            reverse_proxy https://svc.bastille.vtluug.org:443 {
+            reverse_proxy https://10.98.3.1:443 {
               transport http {
                 tls_insecure_skip_verify
               }
@@ -160,7 +172,7 @@ in
             # LUUG wiki stuff (slightly different vs gobblerpedia) {{{
             # Proxy to internal instance
             handle /w/* {
-              reverse_proxy https://svc.bastille.vtluug.org:443 {
+              reverse_proxy https://10.98.3.1:443 {
                 transport http {
                   tls_insecure_skip_verify
                 }
@@ -171,7 +183,7 @@ in
             # See $wgScriptPath & $wgArticle path in MW config
             handle_path /wiki/* {
               rewrite * /w/index.php{uri}
-              reverse_proxy https://svc.bastille.vtluug.org:443 {
+              reverse_proxy https://10.98.3.1:443 {
                 transport http {
                   tls_insecure_skip_verify
                 }
@@ -179,7 +191,7 @@ in
             }
             handle /wiki {
               rewrite * /w/index.php
-              reverse_proxy https://svc.bastille.vtluug.org:443 {
+              reverse_proxy https://10.98.3.1:443 {
                 transport http {
                   tls_insecure_skip_verify
                 }
@@ -192,7 +204,7 @@ in
 
             # Main site
             handle {
-              reverse_proxy https://svc.bastille.vtluug.org:443 {
+              reverse_proxy https://10.98.3.1:443 {
                 transport http {
                   tls_insecure_skip_verify
                 }
