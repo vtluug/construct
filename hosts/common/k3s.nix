@@ -2,7 +2,7 @@
   lib,
   role ? "agent",
   clusterInit ? false,
-  serverAddr ? "10.98.3.2",
+  serverAddr ? "10.98.3.1",
   flannelIface ? "enp1s0f1",
 }:
 {
@@ -28,6 +28,7 @@
       "--flannel-iface=${flannelIface}"
       "--advertise-address=${serverAddr}"
       "--bind-address=${serverAddr}"
+      "--tls-san=${serverAddr}"
       "--write-kubeconfig-mode=0640"
       "--write-kubeconfig-group=wheel"
     ];

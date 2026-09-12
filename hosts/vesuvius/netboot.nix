@@ -54,6 +54,7 @@ in
 {
   services.dnsmasq = {
     enable = true;
+    resolveLocalQueries = false;
     settings = {
       port = 0; #Disable DNS
       interface = "${tftp_iface}";

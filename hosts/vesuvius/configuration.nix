@@ -2,7 +2,13 @@
 {
   imports = [
     ./hardware-configuration.nix
-    (import ../common/k3s.nix { inherit lib; role = "server"; clusterInit = true; })
+    (import ../common/k3s.nix {
+      inherit lib;
+      role = "server";
+      clusterInit = true;
+      serverAddr = "10.98.3.1";
+      flannelIface = "ens865";
+    })
     ./nix.nix
     ./zfs.nix
     ./ipa.nix
@@ -15,6 +21,8 @@
     ../common/tz-locale.nix
     ../common/users-local.nix
     ../common/sshd.nix
+
+    ../common/whit/dns.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
