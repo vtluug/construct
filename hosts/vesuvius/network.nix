@@ -9,6 +9,18 @@
   networking.hostName = "vesuvius";
 
   networking.networkmanager.enable = true;
+  networking.networkmanager.unmanaged = [ "interface-name:ens865" ];
+
+  # statically routed k3s backend
+  networking.interfaces.ens865 = {
+    useDHCP = false;
+    ipv4.addresses = [
+      {
+        address = "10.98.3.1";
+        prefixLength = 24;
+      }
+    ];
+  };
 
   # so k3s sets this itself when it initializes, but
   #  nix then (sometimes) overwrites it on rebuild. so
