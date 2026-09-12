@@ -3,7 +3,7 @@ version 12.2
 no service pad
 service timestamps debug datetime msec
 service timestamps log datetime msec
-no service password-encryption
+service password-encryption
 !
 hostname Magma
 !
@@ -12,17 +12,27 @@ boot-end-marker
 !
 enable secret 5 <MD5 HASH HERE>
 !
+username admin privilege 15 secret 5 <MD5 HASH HERE>
 !
 !
 no aaa new-model
 switch 1 provision ws-c3750g-48ts
 system mtu routing 1500
 ip routing
+ip domain-name magma.local
 !
 !
 !
 !
+crypto pki trustpoint TP-self-signed-267366656
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-267366656
+ revocation-check none
+ rsakeypair TP-self-signed-267366656
 !
+!
+crypto pki certificate chain TP-self-signed-267366656
+ certificate self-signed 01 nvram:IOS-Self-Sig#3636.cer
 !
 !
 !
@@ -31,6 +41,7 @@ spanning-tree extend system-id
 !
 vlan internal allocation policy ascending
 !
+ip ssh version 2
 !
 !
 !
@@ -200,6 +211,13 @@ ip http secure-server
 !
 !
 line con 0
+line vty 0 4
+ exec-timeout 15 0
+ login local
+ transport input ssh
 line vty 5 15
+ exec-timeout 15 0
+ login local
+ transport input ssh
 !
 end
