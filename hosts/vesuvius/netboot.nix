@@ -6,7 +6,7 @@
 }:
 let
   dom_ip = "10.98.0.23";
-  tftp_iface = "enp1s0f1";
+  tftp_iface = "eno0";
 
   netboot-hostnames = import ../bastille/blade-names.nix;
 
@@ -52,13 +52,6 @@ let
   '';
 in
 {
-  networking.interfaces."${tftp_iface}".ipv4.addresses = [
-    {
-      address = dom_ip;
-      prefixLength = 24;
-    }
-  ];
-
   services.dnsmasq = {
     enable = true;
     settings = {
