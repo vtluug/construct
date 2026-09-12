@@ -6,7 +6,6 @@
 }:
 let
   gandi-key-path = "/secrets/gandi.env";
-  cluster-router-ip = "10.98.0.192";
 in
 {
   age.secrets."gandi.env".file = ../../secrets/vesuvius/gandi.env.age;

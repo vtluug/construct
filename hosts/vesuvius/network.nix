@@ -14,12 +14,18 @@
   # statically routed k3s backend
   networking.interfaces.ens865 = {
     useDHCP = false;
-    ipv4.addresses = [
-      {
-        address = "10.98.3.1";
-        prefixLength = 24;
-      }
-    ];
+  };
+  networking.macvlans.ens865-shim = {
+    interface = "ens865";
+    mode = "bridge";
+  };
+
+  networking.interfaces.ens865-shim = {
+    useDHCP = false;
+    ipv4.addresses = [{
+      address = "10.98.3.1";
+      prefixLength = 24;
+    }];
   };
 
   # so k3s sets this itself when it initializes, but
