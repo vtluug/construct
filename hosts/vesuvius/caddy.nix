@@ -55,20 +55,10 @@ in
               prefixLength = 64;
             }
           ];
-          ipv4.routes = [
-            {
-              address = "10.98.3.0";
-              prefixLength = 24;
-              via = cluster-router-ip;
-              # The route is installed before DHCP adds the private address.
-              options.onlink = "";
-            }
-          ];
         };
 
-        # use vesuvius for dns
         networking.useHostResolvConf = false;
-        networking.nameservers = [ "10.98.3.2" ];
+        networking.nameservers = [ "10.98.0.1" ];
         networking.dhcpcd.extraConfig = ''
           nooption domain_name_servers
         '';
