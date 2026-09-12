@@ -2,6 +2,7 @@
   imports = [
     ./eno1-imm-disable.nix
     ./network.nix
+    ./unseal-hostkey.nix
     (import ../common/k3s.nix {
       inherit lib;
       serverAddr = "10.98.3.1";

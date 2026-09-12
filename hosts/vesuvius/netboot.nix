@@ -1,4 +1,5 @@
 {
+  agenix,
   config,
   lib,
   pkgs,
@@ -14,6 +15,7 @@ let
     system = "x86_64-linux";
 
     modules = [
+      agenix.nixosModules.default
       ../bastille/blade.nix
     ];
   };

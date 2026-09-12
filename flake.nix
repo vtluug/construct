@@ -36,6 +36,7 @@
         name:
         nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
+          specialArgs = { inherit agenix; };
           modules = [
             (hostsDir + "/${name}/configuration.nix")
             agenix.nixosModules.default
