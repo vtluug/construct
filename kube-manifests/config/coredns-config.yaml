@@ -6,7 +6,7 @@ metadata:
 data:
   my-custom.server: |
     bastille.vtluug.org:53 {
-        forward . 10.98.3.2
+        forward . 10.98.0.1
     }
     whit.vtluug.org:53 {
         forward . 10.98.0.1
