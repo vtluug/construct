@@ -27,6 +27,13 @@ in
   boot.kernelModules = [ "bonding" ];
   hardware.firmware = [ bnx2xFirmware ];
 
+  # bond(ed)
+  networking.networkmanager.unmanaged = [
+    "interface-name:ens6f0"
+    "interface-name:ens6f1"
+    "interface-name:bond0"
+  ];
+
   systemd.services.blade-backend-network = {
     description = "Configure this blade's static backend address";
     wantedBy = [ "multi-user.target" ];

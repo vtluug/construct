@@ -7,7 +7,7 @@
       role = "server";
       clusterInit = true;
       serverAddr = "10.98.3.1";
-      flannelIface = "ens865";
+      flannelIface = "ens865-shim";
     })
     ./nix.nix
     ./zfs.nix

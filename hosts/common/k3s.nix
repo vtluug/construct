@@ -14,17 +14,17 @@
     8472
   ];
 
+  age.secrets."k3s-join-token".file = ../../secrets/k3s-join-token.age;
+
   services.k3s = {
     inherit role clusterInit;
 
     enable = true;
     serverAddr = lib.mkIf (role != "server") "https://${serverAddr}:6443";
     nodeIP = lib.mkIf (role == "server") serverAddr;
+    tokenFile = "/run/agenix/k3s-join-token";
 
-    extraFlags = [
-      "--token=\"garbage secret\""
-    ]
-    ++ lib.optionals (role == "server") [
+    extraFlags = lib.optionals (role == "server") [
       "--flannel-iface=${flannelIface}"
       "--advertise-address=${serverAddr}"
       "--bind-address=${serverAddr}"
