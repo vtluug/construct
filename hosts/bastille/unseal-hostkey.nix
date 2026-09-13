@@ -138,14 +138,36 @@ in
 
     script = ''
       install -d -m 0751 /run/agenix
-      secret_tmp=$(mktemp /run/agenix/.k3s-join-token.XXXXXX)
-      trap 'rm -f "$secret_tmp"' EXIT
+      join_token_tmp=$(mktemp /run/agenix/.k3s-join-token.XXXXXX)
+      node_password_tmp=$(mktemp /run/.k3s-node-password.XXXXXX)
+      trap 'rm -f "$join_token_tmp" "$node_password_tmp"' EXIT
       ${pkgs.age}/bin/age --decrypt \
         -i ${lib.escapeShellArg hostKeyPath} \
-        -o "$secret_tmp" \
+        -o "$join_token_tmp" \
         ${../../secrets/k3s-join-token.age}
-      chmod 0400 "$secret_tmp"
-      mv "$secret_tmp" /run/agenix/k3s-join-token
+      chmod 0400 "$join_token_tmp"
+      mv "$join_token_tmp" /run/agenix/k3s-join-token
+
+      blade_secrets=
+      for interface in /sys/class/net/*; do
+        [ -f "$interface/address" ] || continue
+        frontend_mac=$(cat "$interface/address")
+        case "$frontend_mac" in
+          ${macCases}
+        esac
+      done
+
+      if [ -z "$blade_secrets" ] || [ ! -f "$blade_secrets/k3s-node-password.age" ]; then
+        echo "No k3s node-password secret matches a local frontend MAC" >&2
+        exit 1
+      fi
+
+      ${pkgs.age}/bin/age --decrypt \
+        -i ${lib.escapeShellArg hostKeyPath} \
+        -o "$node_password_tmp" \
+        "$blade_secrets/k3s-node-password.age"
+      install -d -m 0700 /etc/rancher/node
+      install -m 0600 "$node_password_tmp" /etc/rancher/node/password
     '';
 
     serviceConfig = {

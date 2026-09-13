@@ -7,6 +7,7 @@ in {
     eyelander
     vesuvius
   ];
+  "blade-hosts/eyelander/k3s-node-password.age".publicKeys = [ eyelander ];
   "keytabs/vesuvius.keytab.age".publicKeys = [ vesuvius ];
   "zerocool/wg.priv.age".publicKeys = [ zerocool ];
   "vesuvius/gandi.env.age".publicKeys = [ vesuvius ];
