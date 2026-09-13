@@ -31,6 +31,7 @@ let
   unsealHostKey = ''
     export PATH=${lib.makeBinPath [
       pkgs.coreutils
+      pkgs.openssh
       pkgs.tpm-tools
       pkgs.trousers
     ]}
@@ -51,8 +52,11 @@ let
     done
 
     if [ -z "$blade_secrets" ]; then
-      echo "No sealed host key matches a local frontend MAC" >&2
-      exit 1
+      echo "No sealed host key matches a local frontend MAC; generating a temporary host key" >&2
+      install -d -m 0700 /run/ssh-host-keys
+      ssh-keygen -q -t ed25519 -N "" -f ${lib.escapeShellArg hostKeyPath}
+      chmod 0600 ${lib.escapeShellArg hostKeyPath}
+      exit 0
     fi
 
     echo "Unsealing the SSH host key for $blade_name"
@@ -116,6 +120,7 @@ in
 
     path = [
       pkgs.coreutils
+      pkgs.openssh
       pkgs.tpm-tools
       pkgs.trousers
     ];
