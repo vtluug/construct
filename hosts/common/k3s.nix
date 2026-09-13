@@ -24,8 +24,9 @@
     nodeIP = lib.mkIf (role == "server") serverAddr;
     tokenFile = "/run/agenix/k3s-join-token";
 
-    extraFlags = lib.optionals (role == "server") [
+    extraFlags = [
       "--flannel-iface=${flannelIface}"
+    ] ++ lib.optionals (role == "server") [
       "--advertise-address=${serverAddr}"
       "--bind-address=${serverAddr}"
       "--tls-san=${serverAddr}"
