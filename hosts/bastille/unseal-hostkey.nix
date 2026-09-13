@@ -43,12 +43,22 @@ let
     blade_name=
     blade_secrets=
 
-    for interface in /sys/class/net/*; do
-      [ -f "$interface/address" ] || continue
-      frontend_mac=$(cat "$interface/address")
-      case "$frontend_mac" in
-        ${macCases}
-      esac
+    retries=120
+    while [ -z "$blade_secrets" ]; do
+      for interface in /sys/class/net/*; do
+        [ -f "$interface/address" ] || continue
+        frontend_mac=$(cat "$interface/address")
+        case "$frontend_mac" in
+          ${macCases}
+        esac
+      done
+
+      [ -n "$blade_secrets" ] && break
+      if [ "$retries" -eq 0 ]; then
+        break
+      fi
+      retries=$((retries - 1))
+      sleep 0.25
     done
 
     if [ -z "$blade_secrets" ]; then

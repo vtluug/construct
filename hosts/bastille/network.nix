@@ -88,6 +88,7 @@ in
       for interface in ens6f0 ens6f1; do
         ip link set "$interface" down
         ip link set "$interface" master bond0
+        ip link set "$interface" up
       done
 
       ip link set bond0 up
