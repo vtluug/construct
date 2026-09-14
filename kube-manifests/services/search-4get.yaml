@@ -1,0 +1,113 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: search-4get-nfs-pvc
+  labels:
+    app: search-4get
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 16Mi
+  storageClassName: forge-nfs-csi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-4get-deployment
+  labels:
+    app: search-4get
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: search-4get
+  template:
+    metadata:
+      labels:
+        app: search-4get
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: "vesuvius"
+      volumes:
+        - name: search-4get-banner
+          persistentVolumeClaim:
+            claimName: search-4get-nfs-pvc
+      initContainers:
+      - name: search-4get-banner-loader
+        image: alpine:3 
+        command:
+          - "sh"
+          - "-c"
+          - wget -O /banner/go-hokies.jpg https://search.vtluug.org/banner/go-hokies.jpg
+        volumeMounts:
+          - name: search-4get-banner
+            mountPath: /banner
+      containers:
+      - name: search-4get
+        image: luuul/4get:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: FOURGET_PROTO
+          value: "http"
+        - name: FOURGET_SERVER_NAME
+          value: "search.vtluug.org"
+        - name: FOURGET_SERVER_SHORT_DESCRIPTION
+          value: "Virginia Tech Linux & Unix User's Group"
+        - name: FOURGET_SERVER_LONG_DESCRIPTION
+          value: "Virginia Tech Linux & Unix User's Group"
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 2
+          limits:
+            memory: 1Gi
+            cpu: 2
+        volumeMounts:
+            - name: search-4get-banner
+              mountPath: /var/www/html/4get/banner
+              readOnly: false
+        # make opensearch hallucinate that we're connecting thru https
+        # otherwise, it'll add the search engine as http://[host], which
+        # inevitably resolves to http://search.vtluug.org:443, which obviously
+        # just doesn't work
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - "/bin/sh"
+                - "-c"
+                - sed -i '2i\$_SERVER[\"HTTPS\"] = \"on\";' opensearch.php
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-4get-service
+spec:
+  selector:
+    app: search-4get
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: search-4get-ingress
+spec:
+  rules:
+  - host: "search.vtluug.org"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: search-4get-service
+            port:
+              number: 80

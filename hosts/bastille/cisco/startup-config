@@ -3,7 +3,7 @@ version 12.2
 no service pad
 service timestamps debug datetime msec
 service timestamps log datetime msec
-no service password-encryption
+service password-encryption
 !
 hostname Magma
 !
@@ -12,17 +12,45 @@ boot-end-marker
 !
 enable secret 5 <MD5 HASH HERE>
 !
+username papatux privilege 15 secret 5 <MD5 HASH HERE>
 !
 !
 no aaa new-model
 switch 1 provision ws-c3750g-48ts
 system mtu routing 1500
-ip routing
+ip domain-name magma.vtluug.org
 !
 !
 !
 !
+crypto pki trustpoint TP-self-signed-267366656
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-267366656
+ revocation-check none
+ rsakeypair TP-self-signed-267366656
 !
+!
+crypto pki certificate chain TP-self-signed-267366656
+ certificate self-signed 01
+  3082023C 308201A5 A0030201 02020101 300D0609 2A864886 F70D0101 04050030
+  30312E30 2C060355 04031325 494F532D 53656C66 2D536967 6E65642D 43657274
+  69666963 6174652D 32363733 36363635 36301E17 0D393330 33303130 30303434
+  305A170D 32303031 30313030 30303030 5A303031 2E302C06 03550403 1325494F
+  532D5365 6C662D53 69676E65 642D4365 72746966 69636174 652D3236 37333636
+  36353630 819F300D 06092A86 4886F70D 01010105 0003818D 00308189 02818100
+  A0FAA298 228F2339 97C98A75 AF7759D8 CF345A1A B0742157 42126870 6CF917E0
+  7276B900 5B0FCB19 D6147F29 A1C58626 E04D5CF8 FFE2391F 56D046E9 B71B2111
+  9B3D8CA4 79A2E56C 2AE37309 73C7AE0A 2B3D2830 98612657 61D5001D 9083BD42
+  8EECBEEE 90F5DC76 9A41D32D 88E6CDBE 66A390BF 40F3D758 883FAA8E D3FD22FF
+  02030100 01A36630 64300F06 03551D13 0101FF04 05300301 01FF3011 0603551D
+  11040A30 0882064D 61676D61 2E301F06 03551D23 04183016 801467E3 0883829A
+  49F8B82C A4700FAF 43DDC2AC 178E301D 0603551D 0E041604 1467E308 83829A49
+  F8B82CA4 700FAF43 DDC2AC17 8E300D06 092A8648 86F70D01 01040500 03818100
+  7325C7E5 5EBD7697 CD3D2178 4D3F625F AC0DA29B 899E224C D5832F49 5C22C7D7
+  4DFD8FC5 050A8822 1C032567 8BE22FF7 7EC1949E E2B4E80E 37D4EE28 E1E34244
+  D3678B6A EBF680E5 4C61F935 184E427E 2851090D 4D736DB6 AFC8D3C5 3BCDAF26
+  711CCC20 22B81C96 F65E0E4C CF74E88C 6E5ACB52 81B9DFA1 B86978EE BC4B1D39
+  quit
 !
 !
 !
@@ -31,6 +59,7 @@ spanning-tree extend system-id
 !
 vlan internal allocation policy ascending
 !
+ip ssh version 2
 !
 !
 !
@@ -38,81 +67,93 @@ interface GigabitEthernet1/0/1
  switchport mode access
 !
 interface GigabitEthernet1/0/2
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/3
+ switchport mode access
 !
 interface GigabitEthernet1/0/4
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/5
+ switchport mode access
 !
 interface GigabitEthernet1/0/6
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/7
+ switchport mode access
 !
 interface GigabitEthernet1/0/8
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/9
+ switchport mode access
 !
 interface GigabitEthernet1/0/10
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/11
+ switchport mode access
 !
 interface GigabitEthernet1/0/12
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/13
+ switchport mode access
 !
 interface GigabitEthernet1/0/14
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/15
+ switchport mode access
 !
 interface GigabitEthernet1/0/16
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/17
+ switchport mode access
 !
 interface GigabitEthernet1/0/18
+ switchport mode access
 !
 interface GigabitEthernet1/0/19
+ switchport mode access
 !
 interface GigabitEthernet1/0/20
+ switchport mode access
 !
 interface GigabitEthernet1/0/21
+ switchport mode access
 !
 interface GigabitEthernet1/0/22
+ switchport mode access
 !
 interface GigabitEthernet1/0/23
+ switchport mode access
 !
 interface GigabitEthernet1/0/24
+ switchport mode access
 !
 interface GigabitEthernet1/0/25
+ switchport mode access
 !
 interface GigabitEthernet1/0/26
+ switchport mode access
 !
 interface GigabitEthernet1/0/27
+ switchport mode access
 !
 interface GigabitEthernet1/0/28
+ switchport mode access
 !
 interface GigabitEthernet1/0/29
+ switchport mode access
 !
 interface GigabitEthernet1/0/30
+ switchport mode access
 !
 interface GigabitEthernet1/0/31
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/32
@@ -122,76 +163,68 @@ interface GigabitEthernet1/0/33
  switchport mode access
 !
 interface GigabitEthernet1/0/34
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/35
  switchport mode access
 !
 interface GigabitEthernet1/0/36
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/37
  switchport mode access
 !
 interface GigabitEthernet1/0/38
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/39
  switchport mode access
 !
 interface GigabitEthernet1/0/40
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/41
  switchport mode access
 !
 interface GigabitEthernet1/0/42
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/43
  switchport mode access
 !
 interface GigabitEthernet1/0/44
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/45
  switchport mode access
 !
 interface GigabitEthernet1/0/46
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/47
  switchport mode access
 !
 interface GigabitEthernet1/0/48
- switchport access vlan 10
  switchport mode access
 !
 interface GigabitEthernet1/0/49
+ switchport mode access
 !
 interface GigabitEthernet1/0/50
+ switchport mode access
 !
 interface GigabitEthernet1/0/51
+ switchport mode access
 !
 interface GigabitEthernet1/0/52
+ switchport mode access
 !
 interface Vlan1
- ip address 10.98.1.192 255.255.255.0 secondary
- ip address 10.98.2.192 255.255.255.0 secondary
- ip address 10.98.0.192 255.255.255.0
+ ip address 10.98.0.192 255.255.0.0
+ no ip route-cache
 !
-interface Vlan10
- ip address 10.98.3.1 255.255.255.0
-!
+ip default-gateway 10.98.0.1
 ip classless
-ip route 0.0.0.0 0.0.0.0 10.98.0.1
 ip http server
 ip http secure-server
 !
@@ -200,6 +233,13 @@ ip http secure-server
 !
 !
 line con 0
+line vty 0 4
+ exec-timeout 15 0
+ login local
+ transport input ssh
 line vty 5 15
+ exec-timeout 15 0
+ login local
+ transport input ssh
 !
 end

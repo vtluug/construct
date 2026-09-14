@@ -15,6 +15,16 @@
     flake-parts,
     agenix,
   }:
+  let
+    hostsDir = ./hosts;
+    hostNames = builtins.attrNames (
+      nixpkgs.lib.filterAttrs (
+        name: type:
+          type == "directory"
+          && builtins.pathExists (hostsDir + "/${name}/configuration.nix")
+      ) (builtins.readDir hostsDir)
+    );
+  in
   flake-parts.lib.mkFlake {inherit inputs;} {
     systems = [
       "aarch64-darwin"
@@ -22,29 +32,17 @@
     ];
 
     flake = {
-      nixosConfigurations = {
-        rowhammer = nixpkgs.lib.nixosSystem {
+      nixosConfigurations = nixpkgs.lib.genAttrs hostNames (
+        name:
+        nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
+          specialArgs = { inherit agenix; };
           modules = [
-            (import ./hosts/rowhammer/configuration.nix)
+            (hostsDir + "/${name}/configuration.nix")
             agenix.nixosModules.default
           ];
-        };
-        vesuvius = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            (import ./hosts/vesuvius/configuration.nix)
-            agenix.nixosModules.default
-          ];
-        };
-        zerocool = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            (import ./hosts/zerocool/configuration.nix)
-            agenix.nixosModules.default
-          ];
-        };
-      };
+        }
+      );
     };
 
     perSystem = {
@@ -62,8 +60,9 @@
 
         NIX_SSHOPTS="-o ForwardAgent=yes -J acidburn.vtluug.org" \
         ${pkgs.nixos-rebuild}/bin/nixos-rebuild switch \
-          --fast --flake ".#$TARGET_HOST_NAME" \
-          --use-remote-sudo \
+          --flake ".#$TARGET_HOST_NAME" \
+          --no-reexec \
+          --sudo \
           --target-host "papatux@$TARGET_HOST_ADDRESS" \
           --build-host "papatux@$TARGET_HOST_ADDRESS"
       '';

@@ -1,0 +1,289 @@
+! Command: show running-config
+! device: pahoehoe (DCS-7050QX-32, EOS-4.24.11M-2GB)
+!
+! boot system flash:/EOS-2GB-4.24.11M.swi
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model ribd
+!
+hostname pahoehoe
+dns domain vtluug.org
+!
+spanning-tree mode mstp
+!
+service unsupported-transceiver wiprolabs f5047577
+!
+enable password 5 <INSERT HASHED password>
+no aaa root
+!
+username papatux privilege 15 secret 5 <INSERT HASHED password>
+!
+interface Port-Channel1
+!
+interface Port-Channel2
+!
+interface Port-Channel3
+!
+interface Port-Channel4
+!
+interface Port-Channel5
+!
+interface Port-Channel6
+!
+interface Port-Channel7
+!
+interface Port-Channel8
+!
+interface Port-Channel9
+!
+interface Port-Channel10
+!
+interface Port-Channel11
+!
+interface Port-Channel12
+!
+interface Ethernet1/1
+   speed forced 10000full
+   channel-group 1 mode active
+!
+interface Ethernet1/2
+   speed forced 10000full
+   channel-group 1 mode active
+!
+interface Ethernet1/3
+   speed forced 10000full
+   channel-group 2 mode active
+!
+interface Ethernet1/4
+   speed forced 10000full
+   channel-group 2 mode active
+!
+interface Ethernet2/1
+!
+interface Ethernet2/2
+!
+interface Ethernet2/3
+!
+interface Ethernet2/4
+!
+interface Ethernet3/1
+   channel-group 3 mode active
+!
+interface Ethernet3/2
+   channel-group 3 mode active
+!
+interface Ethernet3/3
+   channel-group 4 mode active
+!
+interface Ethernet3/4
+   channel-group 4 mode active
+!
+interface Ethernet4/1
+!
+interface Ethernet4/2
+!
+interface Ethernet4/3
+!
+interface Ethernet4/4
+!
+interface Ethernet5/1
+   channel-group 5 mode active
+!
+interface Ethernet5/2
+   channel-group 5 mode active
+!
+interface Ethernet5/3
+   channel-group 6 mode active
+!
+interface Ethernet5/4
+   channel-group 6 mode active
+!
+interface Ethernet6/1
+!
+interface Ethernet6/2
+!
+interface Ethernet6/3
+!
+interface Ethernet6/4
+!
+interface Ethernet7/1
+!
+interface Ethernet7/2
+!
+interface Ethernet7/3
+!
+interface Ethernet7/4
+!
+interface Ethernet8/1
+!
+interface Ethernet8/2
+!
+interface Ethernet8/3
+!
+interface Ethernet8/4
+!
+interface Ethernet9/1
+!
+interface Ethernet9/2
+!
+interface Ethernet9/3
+!
+interface Ethernet9/4
+!
+interface Ethernet10/1
+!
+interface Ethernet10/2
+!
+interface Ethernet10/3
+!
+interface Ethernet10/4
+!
+interface Ethernet11/1
+!
+interface Ethernet11/2
+!
+interface Ethernet11/3
+!
+interface Ethernet11/4
+!
+interface Ethernet12/1
+!
+interface Ethernet12/2
+!
+interface Ethernet12/3
+!
+interface Ethernet12/4
+!
+interface Ethernet13/1
+!
+interface Ethernet13/2
+!
+interface Ethernet13/3
+!
+interface Ethernet13/4
+!
+interface Ethernet14/1
+!
+interface Ethernet14/2
+!
+interface Ethernet14/3
+!
+interface Ethernet14/4
+!
+interface Ethernet15/1
+!
+interface Ethernet15/2
+!
+interface Ethernet15/3
+!
+interface Ethernet15/4
+!
+interface Ethernet16/1
+!
+interface Ethernet16/2
+!
+interface Ethernet16/3
+!
+interface Ethernet16/4
+!
+interface Ethernet17/1
+!
+interface Ethernet17/2
+!
+interface Ethernet17/3
+!
+interface Ethernet17/4
+!
+interface Ethernet18/1
+!
+interface Ethernet18/2
+!
+interface Ethernet18/3
+!
+interface Ethernet18/4
+!
+interface Ethernet19/1
+   channel-group 7 mode active
+!
+interface Ethernet19/2
+   channel-group 7 mode active
+!
+interface Ethernet19/3
+   channel-group 8 mode active
+!
+interface Ethernet19/4
+   channel-group 8 mode active
+!
+interface Ethernet20/1
+!
+interface Ethernet20/2
+!
+interface Ethernet20/3
+!
+interface Ethernet20/4
+!
+interface Ethernet21/1
+   channel-group 9 mode active
+!
+interface Ethernet21/2
+   channel-group 9 mode active
+!
+interface Ethernet21/3
+   channel-group 10 mode active
+!
+interface Ethernet21/4
+   channel-group 10 mode active
+!
+interface Ethernet22/1
+!
+interface Ethernet22/2
+!
+interface Ethernet22/3
+!
+interface Ethernet22/4
+!
+interface Ethernet23/1
+   channel-group 11 mode active
+!
+interface Ethernet23/2
+   channel-group 11 mode active
+!
+interface Ethernet23/3
+   channel-group 12 mode active
+!
+interface Ethernet23/4
+   channel-group 12 mode active
+!
+interface Ethernet24/1
+!
+interface Ethernet24/2
+!
+interface Ethernet24/3
+!
+interface Ethernet24/4
+!
+interface Ethernet25
+!
+interface Ethernet26
+!
+interface Ethernet27
+!
+interface Ethernet28
+!
+interface Ethernet29
+!
+interface Ethernet30
+!
+interface Ethernet31
+!
+interface Ethernet32
+!
+interface Management1
+   ip address 10.98.0.197/24
+!
+no ip routing
+!
+ip route 0.0.0.0/0 10.98.0.1
+!
+end
