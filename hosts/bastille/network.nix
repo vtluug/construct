@@ -25,6 +25,7 @@ let
 in
 {
   networking.tempAddresses = "disabled";
+  networking.networkmanager.settings.connection."ipv6.addr-gen-mode" = 0; # eui64
 
   boot.kernelModules = [ "bonding" ];
   hardware.firmware = [ bnx2xFirmware ];

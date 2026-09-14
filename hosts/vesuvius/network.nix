@@ -9,6 +9,8 @@
   networking.hostName = "vesuvius";
 
   networking.networkmanager.enable = true;
+  networking.tempAddresses = "disabled";
+  networking.networkmanager.settings.connection."ipv6.addr-gen-mode" = 0; # eui64
   networking.networkmanager.unmanaged = [ "interface-name:ens865" ];
 
   # statically routed k3s backend
@@ -48,6 +50,12 @@
 
   networking.nftables = {
     enable = true;
+    flushRuleset = false;
+    extraDeletions = ''
+      add table ip6 filter
+      add chain ip6 filter input
+      delete chain ip6 filter input
+    '';
     ruleset = ''
         table ip6 filter {
           chain input {
@@ -55,6 +63,7 @@
 
             ct state { established, related } accept;
             iifname "lo" accept;
+            tcp dport 2222 accept comment "Allow global IPv6 SSH";
 
             icmpv6 type { destination-unreachable, packet-too-big, time-exceeded, parameter-problem, nd-neighbor-solicit, nd-neighbor-advert } accept;
 
