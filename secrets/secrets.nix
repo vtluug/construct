@@ -14,6 +14,9 @@ let
   vesuvius = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOHI7ziwxkEbJzvpaZulPFpDW7l0vbGJ+ifHcHJ2fHex";
   zerocool = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN+60yHIqES3Dr1Upp23QGwzvqELQEeH6e4lTKTV9iUY root@zerocool";
 in {
+  "humans/blade-tpm12-owner-passwds.age".publicKeys = builtins.filter
+    (key: builtins.match "ssh-ed25519 .*" key != null)
+    (import ../papatux-keys.nix);
   "k3s-join-token.age".publicKeys = [
     backbiter
     damocles
