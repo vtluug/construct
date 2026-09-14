@@ -24,6 +24,8 @@ let
   '';
 in
 {
+  networking.tempAddresses = "disabled";
+
   boot.kernelModules = [ "bonding" ];
   hardware.firmware = [ bnx2xFirmware ];
 
