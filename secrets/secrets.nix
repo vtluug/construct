@@ -1,4 +1,5 @@
 let
+  durendal = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPZXE6fhzzswWKOL6bMWd0+5EGuYhK/gwwgosCmGdh1U durendal host key";
   backbiter = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH0gfTT0htiRipP8kD4/IM88mEPoqUHYrMstE/CohYnE backbiter host key";
   excalibur = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII8U2YHuRDBTGAx8d/bF/PB1bzDi+0EEBnL/3Gs34dnt excalibur host key";
   eyelander = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKTeMkC8h0ldLsj6gbEOPuiuHYMJCxlheA3VlhUTY5bi eyelander host key";
@@ -14,6 +15,7 @@ let
 in {
   "k3s-join-token.age".publicKeys = [
     backbiter
+    durendal
     excalibur
     eyelander
     gram
@@ -26,6 +28,7 @@ in {
     vesuvius
   ];
   "blade-hosts/backbiter/k3s-node-password.age".publicKeys = [ backbiter ];
+  "blade-hosts/durendal/k3s-node-password.age".publicKeys = [ durendal ];
   "blade-hosts/excalibur/k3s-node-password.age".publicKeys = [ excalibur ];
   "blade-hosts/eyelander/k3s-node-password.age".publicKeys = [ eyelander ];
   "blade-hosts/gram/k3s-node-password.age".publicKeys = [ gram ];
