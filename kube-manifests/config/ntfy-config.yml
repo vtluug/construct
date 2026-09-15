@@ -1,0 +1,10 @@
+# Adapted from https://docs.ntfy.sh/install/#__tabbed_8_1
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ntfy
+data:
+  server.yml: |
+    # Template: https://github.com/binwiederhier/ntfy/blob/main/server/server.yml
+    base-url: https://ntfy.vtluug.org
+    listen-http: ":8080"

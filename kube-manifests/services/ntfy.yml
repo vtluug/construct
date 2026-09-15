@@ -1,0 +1,67 @@
+# Adapted from https://docs.ntfy.sh/install/#__tabbed_7_1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ntfy
+  labels:
+    app: ntfy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ntfy
+  template:
+    metadata:
+      labels:
+        app: ntfy
+    spec:
+      containers:
+      - name: ntfy
+        image: docker.io/binwiederhier/ntfy
+        args: ["serve"]
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+          name: http
+        volumeMounts:
+        - name: ntfy-config
+          mountPath: "/etc/ntfy"
+          readOnly: true
+      volumes:
+        - name: ntfy-config
+          configMap:
+            name: ntfy-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ntfy-service
+  labels:
+    app: ntfy
+spec:
+  selector:
+    app: ntfy
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ntfy-ingress
+spec:
+  rules:
+  - host: "ntfy.vtluug.org"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: ntfy-service
+            port:
+              number: 80
