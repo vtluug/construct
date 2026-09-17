@@ -40,6 +40,7 @@
           modules = [
             (hostsDir + "/${name}/configuration.nix")
             agenix.nixosModules.default
+            (import hosts/common/build-info.nix { inherit self; })
           ];
         }
       );
