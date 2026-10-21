@@ -10,6 +10,7 @@
       ../common/sshd.nix
       ../common/users-local.nix
       ../common/tz-locale.nix
+      ../common/certificate-denylist.nix
     ];
 
   networking.hostName = "rowhammer";
