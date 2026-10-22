@@ -127,6 +127,7 @@ in
     ../common/sshd.nix
     ../common/users-local.nix
     ../common/tz-locale.nix
+    ../common/certificate-denylist.nix
 
     ./router.nix
     (import ./lan.nix {

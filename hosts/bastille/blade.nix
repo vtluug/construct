@@ -11,6 +11,7 @@
     ../common/nix.nix
     ../common/sshd.nix
     ../common/users-local.nix
+    ../common/certificate-denylist.nix
     (modulesPath + "/installer/netboot/netboot-minimal.nix")
   ];
 

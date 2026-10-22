@@ -21,6 +21,7 @@
     ../common/tz-locale.nix
     ../common/users-local.nix
     ../common/sshd.nix
+    ../common/certificate-denylist.nix
 
     ../common/whit/dns.nix
   ];
