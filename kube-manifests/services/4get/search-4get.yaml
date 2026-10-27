@@ -37,17 +37,17 @@ spec:
             claimName: search-4get-nfs-pvc
       initContainers:
       - name: search-4get-banner-loader
-        image: alpine:3 
+        image: alpine:3
         command:
           - "sh"
           - "-c"
-          - wget -O /banner/go-hokies.jpg https://search.vtluug.org/banner/go-hokies.jpg
+          - wget -O /banner/go-hokies.jpg https://raw.githubusercontent.com/vtluug/construct/main/kube-manifests/services/4get/go-hokies.jpg
         volumeMounts:
           - name: search-4get-banner
             mountPath: /banner
       containers:
       - name: search-4get
-        image: luuul/4get:latest
+        image: ghcr.io/kurisufriend/4get-oracles:latest
         ports:
         - containerPort: 80
         env:
