@@ -41,13 +41,13 @@ spec:
         command:
           - "sh"
           - "-c"
-          - wget -O /banner/go-hokies.jpg https://search.vtluug.org/banner/go-hokies.jpg
+          - wget -O /banner/go-hokies.jpg https://vtluug.org/~rsk/files/go-hokies.jpg
         volumeMounts:
           - name: search-4get-banner
             mountPath: /banner
       containers:
       - name: search-4get
-        image: luuul/4get:latest
+        image: ghcr.io/kurisufriend/4get-oracles:latest
         ports:
         - containerPort: 80
         env:
