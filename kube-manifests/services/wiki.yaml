@@ -126,8 +126,7 @@ spec:
             name: wiki-config-gobblerpedia
       containers:
       - name: mediawiki
-        image: vtluug/mediawiki-vtluug:1.1
-        command: ['/bin/sh', '-c', 'sleep 7 && php /var/www/html/w/maintenance/update.php --quick ; apache2-foreground']
+        image: ghcr.io/vtluug/mediawiki-vtluug:ff6264d9a3639ba878b63cfb933c01c1104811b9
         ports:
         - containerPort: 80
         env:
@@ -349,7 +348,6 @@ data:
 
     wfLoadExtension('Cite');
 
-    wfLoadExtension('Interwiki');
     $wgGroupPermissions['sysop']['interwiki'] = true;
 
     wfLoadExtension('Maps');
@@ -368,21 +366,37 @@ data:
 
     wfLoadExtension('PluggableAuth');
     wfLoadExtension('OpenIDConnect');
-    $wgPluggableAuth_EnableLocalLogin   = true;
-    $wgPluggableAuth_ButtonLabelMessage = 'VTLUUG SSO';
-    $wgOpenIDConnect_UseEmailNameAsUserName = true;
-    $wgOpenIDConnect_Config['https://id.vtluug.org'] = [
-        'clientID'           => 'vtluug-wiki',
-        'clientsecret'       => getenv('DEX_WIKI_SECRET'),
-        'name'               => 'VTLUUG SSO',
-        'scope'              => ['openid', 'profile', 'email'],
-        'preferred_username' => 'name'
+
+    // this stuff was changed in 7.x
+    $wgPluggableAuth_EnableLocalLogin = false;
+
+    $wgPluggableAuth_Config['VTLUUG SSO'] = [
+        'plugin' => 'OpenIDConnect',
+        'data'   => [
+            'providerURL'        => 'https://id.vtluug.org',
+            'clientID'           => 'vtluug-wiki',
+            'clientsecret'       => getenv('DEX_WIKI_SECRET'),
+            'scope'              => ['openid', 'profile', 'email'],
+            'preferred_username' => 'name',
+        ],
+        'buttonLabelMessage' => 'VTLUUG SSO',
     ];
+
+    # TODO: google auth (if we want it)
+    # $wgPluggableAuth_Config['Google SSO'] = [
+    #     'plugin' => 'OpenIDConnect',
+    #     'data'   => [
+    #         'providerURL' => 'https://accounts.google.com',
+    #         'clientID'     => getenv('ODIC_GOOGLE_ID'),
+    #         'clientsecret' => getenv('ODIC_GOOGLE_SECRET'),
+    #         'name'         => 'Google SSO',
+    #         'scope'        => ['openid', 'profile', 'email']
+    #     ],
+    #     'buttonLabelMessage' => 'Google SSO',
+    # ];
 
     wfLoadExtension('ParserFunctions');
     $wgPFEnableStringFunctions = true;
-
-    wfLoadExtension('Renameuser');
 
     $wgGroupPermissions['sysop']['rollback'] = true;
 
@@ -416,14 +430,6 @@ data:
     $wgAppleTouchIcon = "{$wgUploadPath}/apple-icon.png";
     $wgFavicon        = "{$wgUploadPath}/favicon.png";
 
-    $wgPluggableAuth_ButtonLabelMessage = 'VTLUUG/Google SSO';
-    $wgOpenIDConnect_Config['https://accounts.google.com'] = [
-        'clientID'     => getenv('ODIC_GOOGLE_ID'),
-        'clientsecret' => getenv('ODIC_GOOGLE_SECRET'),
-        'name'         => 'Google SSO',
-        'scope'        => ['openid', 'profile', 'email']
-    ];
-
     $wgRightsPage = 'Linux_and_Unix_Users_Group_at_Virginia_Tech_Wiki:License';
     $wgRightsUrl  = 'http://creativecommons.org/licenses/by-sa/3.0/us/';
     $wgRightsText = 'Attribution-Share Alike 3.0 United States';
@@ -443,14 +449,6 @@ data:
 
     $wgLogo = "{$wgUploadPath}/gobblerpedia.png";
     $wgFavicon = "{$wgUploadPath}/favicon.png";
-
-    $wgPluggableAuth_ButtonLabelMessage = 'VTLUUG/Google SSO';
-    $wgOpenIDConnect_Config['https://accounts.google.com'] = [
-        'clientID'     => getenv('ODIC_GOOGLE_ID'),
-        'clientsecret' => getenv('ODIC_GOOGLE_SECRET'),
-        'name'         => 'Google SSO',
-        'scope'        => ['openid', 'profile', 'email']
-    ];
 
     wfLoadExtension('Scribunto');
     $wgScribuntoDefaultEngine = 'luastandalone';
